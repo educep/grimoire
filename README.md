@@ -1,6 +1,6 @@
 # grimoire
 
-*A spellbook for coding agents — portable skills you cast on your own workflow.*
+*A spellbook for coding agents: portable skills you cast on your own workflow.*
 
 Open-source [Agent Skills](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview) for Claude Code and other SKILL.md-compatible agents. Each skill is a portable workflow an agent discovers and runs on its own, living in `skills/<name>/SKILL.md`. A JS orchestrator that chains them end-to-end is coming.
 
@@ -22,13 +22,15 @@ Skills land in `.claude/skills/` (project) or `~/.claude/skills/` (global). Invo
 
 ## Skills
 
-These three chain into a design-to-work pipeline — `roast` → `to-plan` → `to-issues` — but each is useful on its own.
+`roast`, `to-plan`, and `to-issues` run in order as a design pipeline. `tdd` is the discipline for writing the code once the work is planned. `adaptive-replanning` describes how an unattended build loop recovers when a step fails. Each one is useful on its own.
 
 | Skill | What it does |
 | ----- | ------------ |
-| [`roast`](skills/roast/SKILL.md) | Relentlessly stress-tests a plan or design **before any code is written** — exploring the code and existing patterns first, then interrogating the design one question at a time until you reach shared understanding. |
-| [`to-plan`](skills/to-plan/SKILL.md) | Synthesizes an approved `roast` design into a written plan — no interview, just synthesis of what's already settled, sliced into smallest-valuable-first vertical increments. |
-| [`to-issues`](skills/to-issues/SKILL.md) | Breaks a plan into independently-grabbable issues as vertical slices in your issue tracker (Jira, Linear, GitHub Issues, or other), ready to implement one at a time. |
+| [`roast`](skills/roast/SKILL.md) | Stress-tests a plan or design before any code is written. It reads the code and existing patterns first, then interrogates the design one question at a time until you reach shared understanding. |
+| [`to-plan`](skills/to-plan/SKILL.md) | Turns an approved `roast` design into a written plan. No interview, just a synthesis of what was settled, sliced into small vertical increments. |
+| [`to-issues`](skills/to-issues/SKILL.md) | Breaks a plan into independently grabbable issues, one vertical slice each, in your tracker (Jira, Linear, GitHub Issues, or other). |
+| [`tdd`](skills/tdd/SKILL.md) | Test-driven development discipline: red, green, refactor, one behavior at a time, tested through the public interface. |
+| [`adaptive-replanning`](skills/adaptive-replanning/SKILL.md) | How an unattended build loop recovers from a failed step: replan the remaining work from the current state instead of restarting or retrying blindly. |
 
 ## Recommended `CLAUDE.md` setup
 
