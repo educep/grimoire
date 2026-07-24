@@ -1,6 +1,14 @@
 ---
 name: to-issues
-description: Break a plan into independently-grabbable issues as vertical slices. Use after to-plan to turn the plan into tracked, agent-ready work in your issue tracker (Jira, Linear, GitHub Issues, or other) before implementation starts.
+description: Break a plan into independently grabbable issues, one vertical slice each. Use after to-plan to turn a plan into tracked work in your issue tracker (Jira, Linear, GitHub Issues, or other) before building starts.
 ---
 
-Break the plan (in `docs/plans/`) into tracer-bullet issues; each a thin VERTICAL slice that cuts through every layer it needs repositories or sub-repositories of the project, is demoable on its own, and is sized to fit one fresh context window; never a horizontal slice of a single layer. Explore the affected repos first and do any prefactoring as slice 0 ("make the change easy, then make the easy change"); for a wide mechanical change (rename, retype) whose blast radius won't fit one slice, sequence it expand→contract instead; add the new form alongside the old, migrate the call-sites in batches (by module), then delete the old form, never one big-bang slice. For each slice capture: a title in the repos' domain vocabulary, the owning team-agent(s), the files it touches, success criteria, dependencies, and its order (smallest-valuable-first). Create them in your issue tracker (Jira, Linear, GitHub Issues, or other); one issue per slice, associated with the project/ticket and tagged with its slice number, with dependency links (blocks / is-blocked-by) between issues so a track can't run past an unmet dependency; ordering is a default, not a straitjacket — any issue whose blockers are all done is fair game to grab (work the frontier). Present the proposed breakdown as a numbered list and confirm with the user before creating anything. **Next:** `implement`, one issue at a time.
+# Break the plan into issues
+
+Break the plan into small tracer-bullet issues, one thin vertical slice each. A slice cuts through whatever parts of the codebase it needs, can be demoed on its own, and is small enough to fit in one fresh context window. Never carve the work up by layer.
+
+Explore the affected code first. If some groundwork would make the real change easier, do that as slice zero: make the change easy, then make the easy change. For a wide mechanical change like a rename or a retype whose reach will not fit in one slice, sequence it as expand then contract. Add the new form next to the old one, move the call sites over in batches, and only then delete the old form. Do not attempt it as one big rewrite.
+
+For each slice, capture a title in the project's own vocabulary, who will build it, the files it touches, what success looks like, its dependencies, and its order (smallest first). Then create one issue per slice in your tracker (Jira, Linear, GitHub Issues, or other), linked to the parent project or ticket and tagged with its slice number, with block and is-blocked-by links between them so nothing runs ahead of an unmet dependency. Ordering is a default, not a straitjacket: any issue whose blockers are all done is fair to pick up, so work the frontier.
+
+Show the proposed breakdown as a numbered list and get the user's sign-off before you create anything. Then take them one issue at a time.

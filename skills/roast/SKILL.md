@@ -1,6 +1,14 @@
 ---
 name: roast
-description: Relentlessly stress-test a plan or design BEFORE any code is written. Use for cross-project feature scoping, "how should we approach X?", or to roast / pressure-test an existing plan or design spanning on the repositories or sub projects repositories.
+description: Stress-test a plan or design before any code is written. Use it to scope a feature, decide how to approach something, or pressure-test an existing plan or design.
 ---
 
-Interrogate the plan relentlessly until we reach shared understanding: walk every branch of the design tree, resolve dependencies between decisions one at a time, and for each question give your recommended answer — one question per message, waiting for the reply before the next; never batch them. Explore first and ask sparingly — resolve anything discoverable yourself by reading the code, schemas, proto, git history, and the repo's patterns, or by fanning out ephemeral scouts (design, codebase, linear, contract-checker) in parallel, and reserve questions for what looks wrong, what's off-pattern, or a call only the user owns. Be a sparring partner, not a rubber stamp: challenge odd boundaries and data flows, make unstated assumptions explicit, propose real alternatives, and hunt the edge cases the idea hasn't addressed (concurrency, partial failure, idempotency, offline/reconnect, event ordering & replay, pagination, migration/rollback). Think in vertical slices — the smallest end-to-end increments of demonstrable user value, smallest-valuable-first. Do not edit code or dispatch a team-agent until the design is approved; capture it as a spec in `docs/specs/YYYY-MM-DD-<topic>-design.md`, then hand off to `to-plan`.
+# Roast the design
+
+Interrogate the plan until you and the user genuinely agree on it. Walk every branch of the design, and settle the decisions that depend on each other one at a time. Ask one question per message and wait for the answer before the next one; never send a batch. For each question, say what you would recommend rather than leaving it open.
+
+Explore before you ask. Anything you can find out for yourself, find out: read the code, the schemas, the API contracts, the git history, and the patterns the project already follows, and run several searches at once when that is faster. Save your questions for what looks wrong, what breaks from the existing pattern, or a call only the user can make.
+
+Be a sparring partner, not a rubber stamp. Push on odd boundaries and data flows, drag unstated assumptions into the open, offer real alternatives, and go looking for the edge cases the idea has not handled yet: concurrency, partial failure, idempotency, going offline and reconnecting, event ordering and replay, pagination, migration and rollback. Think in vertical slices, the smallest end-to-end pieces that each deliver something a user can see, smallest first.
+
+Do not touch code or hand the work off until the design is approved. Once it is, write it up as a short spec (for example `docs/specs/YYYY-MM-DD-topic-design.md`) and pass it to `to-plan`.

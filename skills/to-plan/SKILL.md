@@ -3,4 +3,12 @@ name: to-plan
 description: Synthesize an approved design into a plan. Use after roast, when a design spec exists and you need a written plan before slicing it into work; no interview, just synthesis of what roast already settled.
 ---
 
-Turn the approved roast design (the spec in `docs/specs/`) plus your codebase understanding into a plan; do not re-interview, synthesize what is already settled. First pick the seams you will test the feature at: prefer existing seams and the highest seam possible (the fewer across the codebase the better, ideally one), and confirm they match the user's expectations. Then write the plan to `docs/plans/YYYY-MM-DD-<topic>-plan.md` with: the problem (user's view), the solution (user's view), a long numbered list of user stories ("as an &lt;actor&gt; I want &lt;feature&gt; so that &lt;benefit&gt;"), the chosen seams, and the vertical slices; the smallest end-to-end increments of demonstrable user value, smallest-valuable-first, each cutting through whatever layers it needs for repositories or sub-repositories of your project rather than a layer built in isolation. Use the domain vocabulary from each affected repo's `CLAUDE.md` and respect existing conventions; don't re-litigate decisions the spec already made. **Next:** hand off to `to-issues`.
+# Turn the design into a plan
+
+Take the approved design (the spec `roast` produced) and what you know about the codebase, and turn them into a written plan. Do not re-interview anyone; just synthesize what is already settled.
+
+Start by choosing the seams you will test the feature at. Prefer seams that already exist, and pick the highest one you can, since fewer seams across the codebase is better and one is ideal. Check that those seams match what the user expects before you go further.
+
+Then write the plan to a file (for example `docs/plans/YYYY-MM-DD-topic-plan.md`). Include the problem in the user's words, the solution in the user's words, a numbered list of user stories in the form "as an [actor] I want [feature] so that [benefit]", the seams you chose, and the vertical slices. A slice is the smallest end-to-end piece that delivers something a user can see, and it cuts through whatever parts of the codebase it needs rather than building one layer on its own. Order them smallest first.
+
+Use the project's own vocabulary and respect the conventions it already follows, and do not reopen decisions the spec has already made. When the plan is agreed, hand it to `to-issues`.
