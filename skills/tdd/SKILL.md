@@ -1,6 +1,6 @@
 ---
 name: tdd
-description: Test-driven development discipline. Red, green, refactor: one behavior at a time, tested through the public interface. Use when building a feature or fixing a bug test first.
+description: Test-driven development discipline. Red, green, then refactor, one behavior at a time, tested through the public interface. Use when building a feature or fixing a bug test first.
 ---
 
 # Test-driven development
