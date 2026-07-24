@@ -1,21 +1,21 @@
-# agent-skills
+# grimoire
 
-Open-source [Agent Skills](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview) for Claude Code and other SKILL.md-compatible agents.
+*A spellbook for coding agents — portable skills you cast on your own workflow.*
 
-Skills are portable workflows an agent discovers and runs on its own. Each lives in `skills/<name>/SKILL.md`.
+Open-source [Agent Skills](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview) for Claude Code and other SKILL.md-compatible agents. Each skill is a portable workflow an agent discovers and runs on its own, living in `skills/<name>/SKILL.md`. A JS orchestrator that chains them end-to-end is coming.
 
 ## Install
 
 Install every skill in this repo with the [`skills`](https://skills.sh) CLI:
 
 ```sh
-npx skills add laurentlouk/agent-skills
+npx skills add laurentlouk/grimoire
 ```
 
 Or install a single skill:
 
 ```sh
-npx skills add laurentlouk/agent-skills/roast
+npx skills add laurentlouk/grimoire/roast
 ```
 
 Skills land in `.claude/skills/` (project) or `~/.claude/skills/` (global). Invoke one in Claude Code with `/roast`, or let the agent trigger it automatically from the description.
