@@ -31,12 +31,27 @@ format`-clean before returning.
 Tests run against a **local Postgres in Docker — never RDS**.
 
 - Setup first: `docker-compose -f docker-compose.test.yml up -d` (DB `inventory_test`, host port 5432).
-- Full suite: `.venv\Scripts\python.exe -m pytest --no-header -p no:cacheprovider` (Windows venv;
-  ~35 min). Or `.\run_tests_local.ps1`.
+- Full suite: `.venv\Scripts\python.exe -m pytest tests/ --create-db -n auto -q --no-header -p no:cacheprovider`
+  (~15 min with `-n auto` on 16 cores). Or `.\run_tests_local.ps1`.
 - Subset: pass node IDs or file paths.
 - `config/settings.py` auto-selects `envs/.env.test` when pytest is imported.
 
-New behavior must include tests, **including cross-tenant isolation cases**.
+**Verification shares infrastructure: ONE test database.** Only the main loop runs the full suite —
+two concurrent suites from parallel agents destroyed it once already. Agents verify subsets at most.
+
+**Known flake family, named by FIXTURE, not file:** anything consuming the
+`browser` / `live_server` / `logged_in_browser` fixtures (`tests/features/workflows/`) times out
+under full-core `-n auto` load, and one timeout cascades through a file's shared fixtures (seen as
+`User.DoesNotExist` setup errors). A different victim file per run; every one green in isolation. If
+a full run fails only there, rerun the file alone before suspecting the diff.
+
+**Wall-clock hazard:** django-ratelimit windows are epoch-aligned; the login rate-limit tests pin
+`django_ratelimit.core.time` with `mock.patch` — keep that pattern for any new throttle test rather
+than racing the clock.
+
+New behavior must include tests, **including cross-tenant isolation cases**, and every user-facing
+change is verified **at the layer the user sees** (render the real view with the real data shape,
+not just the serializer).
 
 ## `apply` / `deploy` — GATED 🔒
 
