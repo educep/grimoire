@@ -513,8 +513,8 @@ INPUT
 | `roast` | Grimoire | keep ~as-is |
 | `tdd` | Grimoire | keep ~as-is |
 | `adaptive-replanning` | Grimoire | keep as theory + **wire into `execute`** so it's finally operational |
-| `to-plan` | Grimoire | upgrade (explicit vertical-slice vs batch trade) — still pending |
-| `to-issues` | Grimoire + Eduardo | upgrade: add Step-9 coverage check + dependency graph — still pending |
+| `to-plan` | Grimoire | ✅ UPGRADED 2026-07-31 — explicit slice-vs-batch hand-off: plan in value slices, never pre-batch; `execute` derives parallelism from `module-topology` (D1) |
+| `to-issues` | Grimoire + Eduardo | ✅ UPGRADED 2026-07-31 — Step-9 coverage check (exactly-one-issue, union==plan, no dangling deferred refs, dependency order) + the D1 hand-off note |
 | `extract` | Eduardo | ✅ DRAFTED 2026-07-31 — generalized, + the paraphrase-trap lesson (§B7) |
 | `mode-select` | Eduardo | ✅ DRAFTED 2026-07-31 — decision table + D6 re-evaluation rule |
 | `execute` | Eduardo | ✅ DRAFTED 2026-07-27, upgraded 07-31 (D7, verification ownership). Absorbs `dispatch` + `plan-workflow` |
