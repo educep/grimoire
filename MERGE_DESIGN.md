@@ -374,7 +374,10 @@ description-triggered, portable. Located in `skills/<name>/SKILL.md`:
   on product decisions instead of guessing. **Theory only — no skill currently uses it.**
 
 ### 1b. Eduardo's `macro-plan-*` system — battle-tested *machinery*
-Lives in the `saas_inventory` project (Django SaaS, "Cuadra / InventoryManager"). Source files:
+Lived in the `saas_inventory` project (Django SaaS, "Cuadra / InventoryManager"). **RETIRED
+2026-07-31** — the commands and `WORKFLOW_check.md` were deleted from that repo once the grimoire
+pipeline was installed (its commit `842a5333`; git history keeps them — recover with
+`git show 842a5333^:<path>`). Historical source files:
 
 - `c:\Users\Eduardo\Documents\code\saas_inventory\.claude\commands\macro-plan-extract.md`
 - `c:\Users\Eduardo\Documents\code\saas_inventory\.claude\commands\macro-plan-dispatch.md`

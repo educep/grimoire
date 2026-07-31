@@ -1,8 +1,9 @@
 # Project adapter — saas_inventory (Cuadra / InventoryManager)
 
-> **Example adapter.** Conforms to `ADAPTER_CONTRACT.md`. Reconstructed from the project's
-> `macro-plan-*` commands, `WORKFLOW_check.md`, and `CLAUDE.md`. Copy to
-> `saas_inventory/.claude/project-adapter.md` to use. 🔒 fields were human-confirmed, not detected.
+> **Example adapter** (canonical copy; installed as `saas_inventory/.claude/project-adapter.md`,
+> where it is law — update both together). Conforms to `ADAPTER_CONTRACT.md`. It fully supersedes
+> the retired `macro-plan-*` commands and `WORKFLOW_check.md` (deleted from the target repo
+> 2026-07-31; its git history keeps them). 🔒 fields were human-confirmed, not detected.
 
 ## `overview`
 
