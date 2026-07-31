@@ -97,3 +97,9 @@ answer**: freeze the rule and ask the one precise clarifying question with the o
   author grading itself.
 - Fixes re-enter this gate. A fix round that skipped review is where the next catastrophe comes
   from.
+- **The gate binds the orchestrator most of all.** The temptation to skip it peaks exactly when it
+  matters: small branches, converged scores, a long green streak, an author confident in their own
+  work. Five clean-feeling branches once went to merge ungated by the same hands that wrote this
+  skill. No merge without the gate — and a merge to a *release* branch additionally requires the
+  human's explicit authorization **for that release**; one past release order is not a standing
+  policy.

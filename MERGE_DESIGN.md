@@ -248,6 +248,8 @@ proof the learning left the war story and entered the method:
 | **Fixtures can exercise a bug path without asserting it** — every refund fixture used a DRAFT invoice; nobody asked where the invoice ended up. Assert the end-state of every entity the operation touches. | `review-gate` §Test honesty |
 | **Deferrals are said out loud** — every finding fixed or journaled by explicit decision; "no, filed as #N" is a valid resolution, silence is not. | `review-gate` §Triage |
 | **"Flaky" is a diagnosis of last resort** — the "selenium flake family" was documented twice (by file, by fixture) before a 40-second DOM probe found a real resize-race in the navbar (TD#102). Probe first, document second. | `review-gate` §Flaky is a diagnosis of last resort |
+| **The gate binds the orchestrator** — five converged-feeling branches merged ungated by the author of the gate (2026-07-31, called out by Eduardo). Confidence is when the gate matters most. | `review-gate` §Lines that never move |
+| **Releases need per-release authorization** — dev→main was merged twice on an extrapolated "established pattern" from one explicit order. Consent to a release yesterday is not consent today. | `review-gate` §Lines that never move + memory `feedback-no-implicit-releases` |
 
 **Skills drafted this round:** `review-gate`, `mode-select`, `extract` — the pipeline
 front-to-back now exists on paper (extract → roast → to-plan → to-issues → mode-select →
