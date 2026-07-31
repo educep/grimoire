@@ -20,6 +20,17 @@ instead of dissolving into a blob. A review is a snapshot: its score describes t
 never the tree after the fixes. There is no score for the current state until someone reviews the
 current state.
 
+## "Flaky" is a diagnosis of last resort
+
+A nondeterministic test failure is a mechanism you have not found yet, not a weather
+condition. One real "parallel-only selenium flake family" was documented twice — first by
+file, then by fixture — and survived days of rerun-in-isolation ritual before a forty-second
+DOM probe found a resize handler closing the menu the test had just opened. The probe order:
+reproduce in isolation until deterministic-ish, then instrument the actual state at the
+failure point (what exists, what loaded, what changed between set and check) — and only if
+the mechanism genuinely resists explanation may the word "flaky" enter a document, dated,
+with what was ruled out.
+
 ## Execute, don't read
 
 A finding verified by running it outranks ten reasoned from the diff. Render the page, run the
