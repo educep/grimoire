@@ -31,9 +31,9 @@
 
 ## Capabilities
 
-Each heading is a capability a skill may reference. `verify`, `apply`, `docs-lookup`, and
-`constraints` may be **absent** — a skill that needs an absent capability degrades gracefully
-(e.g. no `verify` → review-only).
+Each heading is a capability a skill may reference. `verify`, `apply`, `docs-lookup`,
+`constraints`, and `refactoring` may be **absent** — a skill that needs an absent capability
+degrades gracefully (e.g. no `verify` → review-only).
 
 ### `overview`
 
@@ -145,6 +145,25 @@ Project invariants a skill must honor (e.g. max file length, "scope every query 
 "wrap user-facing strings for i18n", "operator-facing console output stays ASCII" — a single
 non-ASCII marker can crash a redirected report on a legacy-encoding console, precisely on the rows
 it existed to flag).
+
+### `refactoring` *(optional)*
+
+Read by the `refactoring-discipline` skill. Declares:
+
+- **Thresholds**: the soft line count that triggers diagnosis before adding code, and the hard
+  limit that fails a commit (if a hook enforces one). The gap between them is the headroom to
+  split calmly instead of mid-commit under a failing gate.
+- **Census**: the command that lists the largest source files, so the skill measures instead of
+  guessing.
+- **Test layout**: where relocated tests go, and any collection/marker conventions a move must
+  preserve.
+- **Interface surface**: the project's list of things that count as public interface when code
+  moves — import paths that need re-exports, framework registrations keyed to module paths,
+  task/queue names derived from module paths, migration or serialization state bound to a
+  module's location. Each entry exists because moving it has broken something before.
+
+Absent → the skill uses its generic defaults and treats every cross-module reference as
+interface until proven otherwise.
 
 ### `secrets`
 
