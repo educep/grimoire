@@ -36,6 +36,23 @@ The fix loop retries the same work. Only the replan loop changes the plan. A sli
 
 Revised tasks use the same shape as the original ones, so they run through the same build and review machinery. A replan is not a special case for anything downstream.
 
+## What resuming and replanning must respect
+
+- **Resume residue.** Re-running a worker that died holding partial edits re-applies its work on
+  top of its own residue. Revert the residue first, or treat the orphaned diff as an unreviewed
+  draft and verify it before anything builds on it.
+- **Killed is not failed.** An externally interrupted step — including a measurement — is
+  relaunched as-is, not replanned around and not converted into a question for the human. Replan on
+  *causes*, not on interruptions.
+- **Stale scope is replanned, never resumed.** When the world has moved under an unstarted part of
+  the plan (entries closed by other work, premises disproven), resuming implements stale scope.
+  Re-plan that part from current reality — and keep the stale text verbatim as the replan's input,
+  because the drift between old and new is itself the evidence that re-deriving pays.
+- **Refusal is an outcome, not a failure.** A worker that disproves its task's premise by execution
+  has finished — a plan instruction is a hypothesis like any other, and an executor may retract it
+  by derivation. The replan records the disproof, corrects the sources that carried the wrong
+  premise, and does not reissue the task.
+
 ## Reading the result
 
 A run should report enough to audit the path it took: how many times it replanned, the lessons the failures taught, whether and why it stopped early, and which tasks were skipped because it stopped first. Emit a start and a done marker for every step, plus each step's token cost, so a step that hangs is obvious rather than invisible.

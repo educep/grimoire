@@ -11,7 +11,7 @@ Write one failing test for one behavior, watch it fail, write the least code tha
 
 It checks behavior through the public interface, the same entry point a real caller uses, and ignores whatever sits behind it. It reads like a specification ("a user can claim a reward once per session") and stays unchanged when you rework the code underneath.
 
-Assert the whole value, not its shape. Compare against the full result, `toEqual(['a', 'b'])` or the complete object, not a loose `typeof x === 'object'` or "the list isn't empty". The expected value has to come from somewhere independent: a literal you know is correct, a worked example, the spec. If you build it the same way the code does, the test passes by construction and proves nothing.
+Assert the whole value, not its shape. Compare against the full result — the complete list, the complete object — not a loose type check or "the list isn't empty". The expected value has to come from somewhere independent: a literal you know is correct, a worked example, the spec. If you build it the same way the code does, the test passes by construction and proves nothing.
 
 ## What to avoid
 
@@ -20,6 +20,72 @@ Mocking your own modules. Testing private helpers. Asserting how often or in wha
 ## Mocking
 
 Mock only at the edges: outside APIs, the clock, randomness, and, sparingly, heavy services like a database or a queue where a real instance is better when you can run one. Never mock code you own. Keep the edges swappable by passing dependencies in instead of building them inside, and give each external call its own small interface so a mock returns one fixed shape with no branching.
+
+## A test is not evidence until it has been shown to fail
+
+Watching the test fail first is the whole point of red-green, and it is the step most often skipped
+when a test is added *after* the fact — to pin a bug fix, or to satisfy a reviewer. Four separate
+tests in one run could not fail at all, and none was found by reading:
+
+- **The tautology.** An assertion that compares the guard's own result against the very
+  predicate the guard is implemented with. It compares an implementation with itself. Assert the independent
+  fact instead — the status set, the worked number, the spec.
+- **The wrong branch.** A control that neutralizes a *neighbouring* flag proves nothing about the
+  branch under test. One fixture exercised a code path whose branch could not observe the defect it
+  was written for; it stayed green under a full revert of the fix.
+- **The unparametrized arm.** A conditional shipped with two arms and a fixture for one. "N passed"
+  is not coverage of a branch nobody parametrized — and the untested arm carried two catastrophes.
+- **The harness-blind assertion.** A claim the runner is *configured* not to observe: a schema
+  migration verified against a runner that skips migrations, a commit-time callback asserted
+  inside a test transaction that never commits. Correct-looking and broken-looking are identical.
+
+So: **for each new conditional, name the fixture that takes each arm.** If you cannot, that arm is
+untested. And before trusting any test written to catch a specific defect, break the fix and watch
+that test — and only that test — go red.
+
+## The fix and its proof share a path
+
+Name **every route** a behaviour has — preview vs. commit, per-tenant, per-locale, per-outcome —
+and assert on all of them, with **measured integers, never `<=` bounds**. A test whose fixture
+cannot produce the failing case proves nothing, and it will be green precisely because the fixture
+lacks the case. Two corollaries:
+
+- **Fixture provenance.** A test asserting a payload or interface shape builds its fixture by
+  calling the real producer (or pinning the producer's declared fields) — never by hand-rolling the
+  dict, which quietly asserts your guess against your guess. The deepest defects survive multiple
+  reviews behind an invented fixture.
+- **A discriminating input, or nothing.** For every assertion, name an input on which the correct
+  and the incorrect implementation *differ*. A corpus where both land on the same answer — supply
+  always covering demand, a worked example where either branch picks the same value, all-rejection
+  candidates — cannot distinguish them, and **the absence of such an input from the corpus is a
+  finding, not a gap**. Boundary values can hide a guard entirely (a zero multiplier pins nothing).
+
+## Absence is not behaviourally testable
+
+Deleting what nothing reads changes no behaviour, so no behavioural test can pin the deletion.
+Absence fixes ship with a **source scan plus a self-test proving the scanner can fail** (plant the
+violation, watch the scan redden, remove it) — otherwise re-adding the removed thing leaves the
+whole suite green. The scanner's claimed scope is itself under test: one planted violation per
+claimed root. The same discipline covers any **gate command** you are about to trust for the
+first time — a syntax checker, a linter invocation, a census script: feed it an input that must
+fail and watch it fail, because more than one stock checker exits 0 without examining anything.
+
+## When examples keep losing, assert the invariant
+
+Attribution-shaped defects are invisible to totals: every version summed correctly and only
+mis-destined the units, so each hand-written fixture stayed green and four fix rounds each closed
+exactly the gap the previous review had named. What ended it was **a property test** — the
+invariant asserted over randomized interleavings — which also surfaced a second bug nobody was
+looking for. When example-based rounds converge one gap at a time on the same defect, stop writing
+examples. Prefer asserting over the governing **constant or registry**, so a case added later is
+covered without anyone remembering to come back — except where the test exists to check the
+constant itself, in which case a deliberate hand copy is the point; say which one you are doing.
+
+Two habits keep coverage claims honest: a guard's own documentation records what it is
+**measured** to catch — including what is structurally invisible to it — and a test's coverage
+claim names the **surface it exercises** (driving the endpoint directly proves nothing about
+the button that is supposed to reach it). Documentation asserting its own untestability is a
+defect-preserving construct, not a disclaimer.
 
 ## Refactor only on green
 

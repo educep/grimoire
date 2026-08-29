@@ -29,6 +29,13 @@ model-per-role economics: the orchestrator stops doing cheap mechanical work on 
 Pick the lightest mode that gives what the work needs — and remember the review-and-remediation loop
 is main-loop-owned in every mode.
 
+## Rule 2b — correctness-criticality overrides "lightest mode"
+
+The lightest-mode instinct yields to correctness: one small issue touching money, tenancy or
+idempotency still gets the edit → verify pipeline with the verify stage on the judgment model —
+slower, on purpose, and explicitly not claimed to be faster. The verify stage is never trimmed to
+save budget; it is the only thing between a cheap model's mistakes and the review gate.
+
 ## Rule 3 — the decision goes stale; re-ask it
 
 Choosing inline is often right for one small change, but the choice is about the work **as it is
@@ -39,3 +46,22 @@ describes — batching by hand, editing serially, commit after commit on the exp
 mode decision is stale, and the answer is to switch, not to keep going.** This rule exists because a
 real five-slice, five-review-round arc ran entirely by hand: the entry decision ("small one-off →
 inline") was correct on day one and never re-asked.
+
+## Rule 4 — the stop predicate is narrow; almost everything else proceeds
+
+Modes differ in machinery, not in when they stop. The genuine stop is: **the action would be
+irreversible, externally visible, or move money already booked — or would contradict a recorded
+decision.** Everything short of that has an autonomous path:
+
+- **Derivable → derive.** A question whose answer is derivable from recorded text — the adapter, a
+  skill, the plan, an entry's provenance, the decision log *wherever it lives* — is never a stop.
+  When a skill covers the decision, invoking the skill IS the autonomous path; search the record
+  before asking at all, because more than one escalated "product decision" was already answered in
+  writing.
+- **Decidable and reversible → propose-and-proceed.** No recorded answer, but cheap to redo: ship a
+  concrete draft, record it as "this is what we did — overturn it if you disagree", and continue. A
+  wrong-but-reversible proposal costs one edit; a blocking ask costs a round trip and repeats every
+  round the answer does not arrive. Reviewers correct a draft far more readily than they author one
+  from nothing — one two-sentence item stalled through five escalations for want of exactly this.
+- **Killed → relaunch.** An externally interrupted measurement or run is not a stop and not a
+  question; it is relaunched. "I would like the owner's preference" is not a stop predicate.

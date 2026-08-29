@@ -13,4 +13,28 @@ For each slice, capture a title in the project's own vocabulary, who will build 
 
 Before showing anyone the breakdown, run the coverage check — the anti-silent-drop guarantee: every piece of the plan appears in exactly one issue; the union of the issues is the whole plan with nothing left over; every dependency points at an issue that actually exists (no work that lives only as a "deferred to issue N" mention inside another issue's text); and no issue depends on one ordered after it. A plan that fails this check has already lost work — silently, which is the worst way.
 
+## How an issue speaks
+
+- **Certifications are forbidden.** An issue says what to CHECK, never what is "already verified" —
+  an acceptance criterion asserting an outcome unconditionally once made an agent write a test
+  blessing the defect it existed to catch. A mandated test is a spec too: demand that the test be
+  shown to fail. And an acceptance criterion is a **runnable check**, not a sentence — a sentence
+  can be arithmetically impossible and nobody notices, least of all its author, who is also its
+  grader.
+- **Every number is a hypothesis.** State counts, site lists and censuses as "measured on <date> —
+  re-derive before acting", because the executor who trusts a stated census ships the stale half.
+  The plan's own worked examples are hypotheses too: check the example actually discriminates the
+  correct implementation from the wrong one before building acceptance on it.
+- **Ask where the invariant lives before enumerating doors.** If the issue is "pin N write paths",
+  first ask whether the invariant belongs where no door can bypass it — a storage-level constraint,
+  one shared chokepoint — and then include what enforcing it there breaks (every environment, not
+  just production) in the issue's scope.
+- **Irreversible-consequence work ships alone.** A money movement (or anything that changes
+  published figures) is its own issue, its own commit, legible in isolation — never a rider.
+- **An issue number is an identifier, not an order.** New work appends; renumbering breaks every
+  reference already in reviews, commits and the journal.
+- **Refusal is a legitimate outcome.** An issue disproven by execution keeps its record: criteria
+  struck through with the disproof, never ticked, and the sources that caused the wrong premise
+  (headers, test names, docstrings) corrected so the next round does not repeat the path.
+
 Show the proposed breakdown as a numbered list and get the user's sign-off before you create anything. Then take them one issue at a time.

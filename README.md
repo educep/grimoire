@@ -22,14 +22,20 @@ Skills land in `.claude/skills/` (project) or `~/.claude/skills/` (global). Invo
 
 ## Skills
 
-`roast`, `to-plan`, and `to-issues` run in order as a design pipeline. `tdd` is the discipline for writing the code once the work is planned. `adaptive-replanning` describes how an unattended build loop recovers when a step fails. Each one is useful on its own.
+The full pipeline runs `extract` → `roast` → `to-plan` → `to-issues` → `mode-select` → `execute` → `review-gate`, with `workflow-orchestrator` managing whole rounds end to end. `tdd` and `refactoring-discipline` are the disciplines for writing and reshaping the code; `adaptive-replanning` describes how an unattended build loop recovers when a step fails. Each one is useful on its own.
 
 | Skill | What it does |
 | ----- | ------------ |
+| [`extract`](skills/extract/SKILL.md) | Turns messy raw input — reviewer messages, bug reports, transcripts, meeting notes — into an investigated, prioritized task list. The front door when work arrives as prose instead of a spec. |
 | [`roast`](skills/roast/SKILL.md) | Stress-tests a plan or design before any code is written. It reads the code and existing patterns first, then interrogates the design one question at a time until you reach shared understanding. |
 | [`to-plan`](skills/to-plan/SKILL.md) | Turns an approved `roast` design into a written plan. No interview, just a synthesis of what was settled, sliced into small vertical increments. |
 | [`to-issues`](skills/to-issues/SKILL.md) | Breaks a plan into independently grabbable issues, one vertical slice each, in your tracker (Jira, Linear, GitHub Issues, or other). |
+| [`mode-select`](skills/mode-select/SKILL.md) | Chooses how a piece of work should run — inline, a main-loop checklist, dispatched agents, or a background workflow — and re-chooses whenever the shape of the work changes. |
+| [`execute`](skills/execute/SKILL.md) | Runs an approved plan of issues into committed work: parallel agents edit, the main loop commits, correctness is verified. |
+| [`review-gate`](skills/review-gate/SKILL.md) | Runs an independent adversarial review of finished work, triages its findings, and drives the fix loop until the work is genuinely clean. For every phase boundary and every merge. |
+| [`workflow-orchestrator`](skills/workflow-orchestrator/SKILL.md) | Makes the main session a meta-orchestrator: it launches one background executor per round, audits the executor's report against git before merging, merges on a clean audit, and lands the bookkeeping. |
 | [`tdd`](skills/tdd/SKILL.md) | Test-driven development discipline: red, green, refactor, one behavior at a time, tested through the public interface. |
+| [`refactoring-discipline`](skills/refactoring-discipline/SKILL.md) | Structural refactoring of oversized files: diagnoses whether size is structural (split by responsibility, interface-preserving) or cosmetic (refuse to split), and never chops a file to satisfy a line count. |
 | [`adaptive-replanning`](skills/adaptive-replanning/SKILL.md) | How an unattended build loop recovers from a failed step: replan the remaining work from the current state instead of restarting or retrying blindly. |
 
 ## Recommended `CLAUDE.md` setup
