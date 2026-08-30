@@ -109,6 +109,27 @@ whether because it was never registered or because its definition file was corru
 formatter destroying its frontmatter, which parses as "no such agent"). So this must be *checked
 before dispatch*, not discovered at launch (see `execute`'s preconditions).
 
+**Declare the project's CHECKLIST here.** The `review` skill owns the review *method* — scoping,
+reachability rating, plant-over-inspection, output shape, triage — and deliberately does **not** own
+what to hunt for, because a checklist is stack-specific and a Django one is worthless in a Rust
+project. List the categories a reviewer must apply and the severity each defect class earns.
+
+**Every caller of the reviewer must declare WHERE ITS REPORT GOES — even when the answer is
+"nowhere".** There are normally three, and they differ:
+
+| caller | writes the report? |
+|---|---|
+| the dispatched reviewer **agent** | **no** — it *returns* it; the caller owns the artifact |
+| an in-session **slash command** | yes, if given a path; otherwise prints |
+| an **orchestrated review stage** | the **orchestrator** writes it, from the returned findings |
+
+*Measured in the host project 2026-08-29: the agent definition said nothing about files while the
+workflow command told the orchestrator to save what the agent returned — under a note claiming the
+two were "kept in sync". An executor dispatched the agent and then polled the reviews directory
+**191 times** for a file it was itself responsible for writing, with no terminating condition.*
+**A caller that is silent about persistence is a defect in that caller**, and the silence is
+invisible until it costs a runaway loop.
+
 ### `config-dirs` *(optional)*
 
 Directories holding **machine-read configuration** rather than prose — agent definitions, skill

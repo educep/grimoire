@@ -37,6 +37,27 @@ The full pipeline runs `extract` → `roast` → `to-plan` → `to-issues` → `
 | [`tdd`](skills/tdd/SKILL.md) | Test-driven development discipline: red, green, refactor, one behavior at a time, tested through the public interface. |
 | [`refactoring-discipline`](skills/refactoring-discipline/SKILL.md) | Structural refactoring of oversized files: diagnoses whether size is structural (split by responsibility, interface-preserving) or cosmetic (refuse to split), and never chops a file to satisfy a line count. |
 | [`adaptive-replanning`](skills/adaptive-replanning/SKILL.md) | How an unattended build loop recovers from a failed step: replan the remaining work from the current state instead of restarting or retrying blindly. |
+| [`review`](skills/review/SKILL.md) | The review *method*: how to scope a review, rate by reachability, prefer a plant to an inspection, report, and dispose findings. Loaded by every caller that reviews. It holds neither the project's checklist (that is the adapter's) nor where the report goes (that is the caller's). |
+
+## Agents and commands
+
+Skills are the semantics; **something has to call them.** These are the callers the skills above
+expect to exist. They are thin on purpose — each loads a skill and adds only what the skill
+deliberately leaves open.
+
+| File | What it is |
+| ---- | ---------- |
+| [`agents/reviewer.md`](agents/reviewer.md) | The reviewer as a **dispatchable agent**, for orchestrated runs. **Install it under the agent-type name your adapter declares** — a named agent type that fails to resolve degrades silently into a weaker generic review. It **returns** the report and writes no files. |
+| [`commands/review.md`](commands/review.md) | The same reviewer as an in-session **slash command**, for reviewing now without paying for a subagent. Prints unless given a path. |
+
+> **The rule these two exist to demonstrate: every caller declares where its report goes, even when
+> the answer is "nowhere".** The three callers of the `review` skill differ — the agent returns, the
+> command prints, an orchestrated stage has the orchestrator write the file — so none of them can
+> inherit another's answer. In the host project the agent was silent about persistence while the
+> workflow command told the orchestrator to save what the agent returned, under a note claiming the
+> two were "kept in sync". An executor dispatched the agent and then polled the reviews directory
+> **191 times** for a file it was itself responsible for writing. A caller silent here is a defect in
+> that caller.
 
 ## How it works
 

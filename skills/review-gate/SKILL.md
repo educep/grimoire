@@ -9,8 +9,14 @@ An independent reviewer examines the work, returns machine-triagable findings on
 and the main loop fixes or journals every one. This is the highest-value step in the whole pipeline:
 across one real eleven-round arc it found a real defect **every single round**, and the worst
 findings were never in the original work — they were in the previous round's fixes. The reviewer
-persona, severity scale, and triage rules come from the adapter (`reviewer`); the loop below is the
-method.
+**method** — scoping, reachability rating, plant-over-inspection, output shape, triage — is the
+[`review`](../review/SKILL.md) skill; the project's **checklist**, severity names and fix-round cap
+come from the adapter (`reviewer`); the loop below is how the rounds are sequenced.
+
+> **This skill is an ORCHESTRATED CALLER, so it declares its persistence contract**: the reviewer
+> **returns** findings and **the main loop writes the report file**, to the adapter's
+> `artifact-paths`. Never wait for the reviewer to write it — awaiting a file a subagent was never
+> told to create is how one run burned 191 polls on a file nobody was going to write.
 
 ## Review the exact tree, and pin it
 
