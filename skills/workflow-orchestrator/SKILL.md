@@ -42,6 +42,25 @@ instead of in the plan, and nobody can audit it there.
    **In a NEW project, create minimal versions of these before the first phase** — an
    orchestrator without record surfaces produces phases that evaporate.
 3. Verify ground truth: `git status` clean, current branch, `git log` HEAD vs remote.
+4. **If the adapter declares the optional `code-graph` capability, run its STALENESS CHECK.** The
+   check is cheap by contract; acting on a stale graph is not. Then do one of three things and **say
+   which in the launch prompt**:
+   - **FRESH** → nothing to say; the executor uses it under the adapter's rules.
+   - **STALE** → rebuild it, or tell the executor it is stale and must not be relied on.
+   - **ABSENT / tool not installed** → tell the executor the capability is unavailable, and let it
+     answer its questions the expensive way. **Do not have the executor install it mid-phase**: that
+     is machine state, not phase work, and a half-broken install is worse than none — the failure
+     surfaces as a confident wrong answer instead of an error.
+
+   **This is yours, not the executor's**, for the same reason git cleanliness is: it is a
+   precondition on the environment, the executor cannot cheaply fix it, and it is exactly the
+   coordination state §1 says only you can supply. *(Measured: a graph left dozens of commits stale
+   while its generator's interpreter had been removed from disk — so the capability was silently
+   unavailable to every phase that might have used it, and nothing said so.)*
+
+   **Reference the adapter's rules; never restate them here.** Especially the one that makes an
+   imperfect graph safe — *it may only ever ADD candidates to check, and is NEVER evidence for a
+   negative* — which belongs in the capability, where a copy cannot drift from it.
 
 ## 1. Launch a phase
 

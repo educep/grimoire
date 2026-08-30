@@ -153,12 +153,36 @@ applies it. Parallel writes corrupt them.
 Where the pipeline's artifacts live: specs, plans, issues, reviews, solutions log, tech-debt journal.
 Enables durable, tool-independent resume (state = artifacts + git, not the tool).
 
+### `code-graph` *(optional)*
+
+A structural graph of the project's own code — symbols and the edges between them — that makes the
+expensive questions cheap: **reachability** (*"can X actually produce Y?"*, the causal half of a
+compound claim), call-site censuses, consumer hunts. Declare **how to build it, how to check its
+staleness, and where it lives**.
+
+**The one rule that makes an imperfect graph safe: it may only ever ADD candidates to check. It is
+NEVER evidence for a negative.** *"Nothing calls X"* is the conclusion it cannot support, and the one
+that deletes live code. Declare what your generator cannot see — templates, runtime registration
+(signals, task autodiscovery, reflective dispatch), string-keyed lookup — because those absences are
+precisely where a confident negative would be wrong.
+
+**Also declare**: that it is **never committed** (it decays every commit), and the staleness check,
+which must be **cheap enough to run on every orient**. A graph that is trusted without a freshness
+check is worse than no graph, because its answers arrive with the same confidence either way.
+
+*This capability is optional under the contract's own test: it requires installing a tool the project
+does not otherwise need.* Consumers must degrade — absent means "answer the question the expensive
+way", never "fail".
+
 ### `docs-lookup` *(optional)*
 
 How to fetch current API docs before coding. **Reference default: Context7** (resolve-library-id →
 query-docs, before any non-trivial API use). May also be a devdocs command, or `none`. The discipline
 is "verify the API against current docs rather than trusting training data"; the tool is
 adapter-supplied.
+
+*Optional under the same test — it depends on a documentation service being reachable. When it is
+not, **say so**; never silently fall back to training data for an API detail.*
 
 ### `constraints` *(optional)*
 
@@ -207,5 +231,12 @@ dedicated file/search tools over shell equivalents. Keeps parallel, permission-g
    at runtime (otherwise resume drifts).
 3. **🔒 fields are human-confirmed.** They cannot be safely detected.
 4. **Absent optional capabilities degrade gracefully** — a skill states what it skipped, never guesses.
+   **What makes a capability optional is a test, not a judgement: does it require installing a tool
+   the project does not otherwise need?** If yes it is optional and every consumer needs an
+   if-absent-skip branch; if no it is required and a consumer may refuse to run without it. The test
+   is checkable, where "is this essential?" invites a fresh argument every time someone adds a
+   capability. *(It classifies correctly on cases that feel borderline: a code graph needs an install,
+   so it is optional; a docs-lookup service must be reachable, so it is optional — and both must fail
+   loudly rather than silently substituting a guess.)*
 5. **The `apply` list is a safety boundary.** Anything on it is off-limits to the parallel engine,
    full stop.
