@@ -38,6 +38,14 @@ The full pipeline runs `extract` → `roast` → `to-plan` → `to-issues` → `
 | [`refactoring-discipline`](skills/refactoring-discipline/SKILL.md) | Structural refactoring of oversized files: diagnoses whether size is structural (split by responsibility, interface-preserving) or cosmetic (refuse to split), and never chops a file to satisfy a line count. |
 | [`adaptive-replanning`](skills/adaptive-replanning/SKILL.md) | How an unattended build loop recovers from a failed step: replan the remaining work from the current state instead of restarting or retrying blindly. |
 | [`review`](skills/review/SKILL.md) | The review *method*: how to scope a review, rate by reachability, prefer a plant to an inspection, report, and dispose findings. Loaded by every caller that reviews. It holds neither the project's checklist (that is the adapter's) nor where the report goes (that is the caller's). |
+| [`code-graph`](skills/code-graph/SKILL.md) | Build and use a structural graph of the project's own code to answer reachability cheaply — *can X actually produce Y?* Ships a working **language-agnostic** builder. Optional: it needs a tool install. Carries the rule that makes an imperfect graph safe — **it may only ever ADD candidates, and is never evidence for a negative.** |
+
+> **One executable, and it is deliberate.** Everything else here is prose you can read before
+> adopting it. `skills/code-graph/scripts/build_code_graph.py` is the exception: a code graph is
+> useless as a description of how to build one, and the wrapper turned out to be genuinely
+> language-agnostic — graphify's own detect/extract carry the tree-sitter grammars, so nothing in it
+> names a language. Point your adapter's `code-graph` capability at it, or write your own; consumers
+> depend on the capability, never on the script.
 
 ## Agents and commands
 

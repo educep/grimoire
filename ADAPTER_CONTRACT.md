@@ -174,6 +174,13 @@ check is worse than no graph, because its answers arrive with the same confidenc
 does not otherwise need.* Consumers must degrade — absent means "answer the question the expensive
 way", never "fail".
 
+**A working reference implementation ships with the package**:
+[`skills/code-graph/scripts/build_code_graph.py`](skills/code-graph/SKILL.md) — language-agnostic
+(graphify's own detect/extract carry the tree-sitter grammars), code-only, no LLM, with the
+three-state staleness check described above. Point this capability at it and you have the whole
+thing; write your own if your project needs different extraction. Either way **the declaration lives
+here**, so consumers depend on the capability rather than on any particular builder.
+
 ### `docs-lookup` *(optional)*
 
 How to fetch current API docs before coding. **Reference default: Context7** (resolve-library-id →
