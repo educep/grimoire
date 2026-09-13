@@ -30,6 +30,12 @@ runtime registration (signals, task autodiscovery, plugin loaders), reflective a
 dispatch, dependency injection, and anything constructed at runtime. Those absences are exactly
 where a confident negative would be wrong.
 
+**But a fence built out of those absences is itself a claim, and it is MEASURED before it is
+granted.** Writing *"anything reachable through a constructed name stays"* into a dead-code census
+keeps members alive on the strength of a shape nobody counted — one such clause was written, then
+measured, and protected exactly zero members. Every exemption for something the graph cannot see
+names its members, or it is a superstition that outlives the sweep.
+
 ______________________________________________________________________
 
 ## Check freshness before trusting anything
