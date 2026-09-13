@@ -27,13 +27,35 @@
    list, `reviewer`, and both topologies.
 5. **Commit** it. From now on it is law; detection never overrides it.
 
+### The install interview
+
+Some capabilities name a thing the project may not have yet. **A consumer that finds one missing
+STOPS AND ASKS; it never guesses** — so the questions are asked once, at install, rather than by
+every command that trips over the gap. For each, the question and the proposal to make when the
+answer is "none":
+
+| capability | the question | when the answer is "none" |
+|---|---|---|
+| `integration-branch` | Which branch does finished work merge into, and which branch do phases cut from? | **Propose creating one**, and say why: feature → integration → release keeps an unreviewed phase off the branch that deploys. A single-branch project may decline — record the decline, because every stacked-PR, retarget and release rule downstream has then collapsed to one branch and consumers must say so. |
+| `release-branch` | Which branch deploys? | Record `none`. The release-PR step is then skipped, and skipped out loud. |
+| `backlog` | Where is the durable list of open work, and where do closed items go? | **Offer to create one, and ask where it lives** — the recommended template is in the capability below. Do not invent a path silently; a backlog nobody opens is the same as no backlog. |
+| `records` | Where do the four record surfaces live — backlog, decision log, phase-keyed artifacts, practice doc? | Offer to create a minimal version of each missing one. An orchestrator without record surfaces produces phases that evaporate. |
+| `orchestration-tool` | Is there a harness tool that runs scripted multi-agent workflows, and how is it invoked? | Record `none`. Plain agent dispatch is the path — it is the default anyway, so nothing is lost but the accelerator. |
+| `verify` | …and which checks run at push/merge that a commit-time gate does not catch? | Record `none`, and say that opening a PR needs no hand-run check. |
+| `code-graph`, `docs-lookup` | Is the tool installed / reachable? | Record `none`. Consumers answer the question the expensive way and **say** they did. |
+
+The interview is a conversation, not a form: ask only what the repo did not already answer, and
+confirm the 🔒 fields even when a draft filled them in.
+
 ---
 
 ## Capabilities
 
-Each heading is a capability a skill may reference. `verify`, `apply`, `docs-lookup`,
-`constraints`, and `refactoring` may be **absent** — a skill that needs an absent capability
-degrades gracefully (e.g. no `verify` → review-only).
+Each heading is a capability a skill or command may reference. `verify`, `apply`, `docs-lookup`,
+`constraints`, `refactoring`, `release-branch`, `orchestration-tool`, `code-graph`, `config-dirs`
+and `shell-conventions` may be **absent** — a consumer that needs an absent capability degrades
+gracefully (e.g. no `verify` → review-only) and **states what it skipped**. Everything else is
+required, and a consumer that finds it missing stops and asks rather than guessing.
 
 ### `overview`
 
@@ -112,6 +134,14 @@ integration branch's doorstep. List each production symbol the diff changed, sea
 its callers, and add every directory that hits one; a fix that nothing pins gets its pin in the same
 round.
 
+**Name the checks that run at PUSH or MERGE rather than at commit, and that the executor therefore
+runs BY HAND before opening a PR.** A gate that fires once per branch is the one nobody has seen
+fail during the work, and it is discovered at the worst moment — by whoever pushes, with the phase
+already closed. Some of these also *mutate* the tree when they run (a regenerated catalog, lockfile
+or schema snapshot), which makes them main-loop-only and makes "run it by hand, then inspect the
+diff" part of the phase, not an afterthought. List each one and say which mutate. Absent → say the
+project has none, so nobody goes looking.
+
 ### `apply` / `deploy` — GATED 🔒
 
 The commands that **mutate live or external state irreversibly** — deploys, `terraform apply`,
@@ -136,6 +166,33 @@ the invariant that **the main loop owns all git** — implementer agents never r
   than the review. Group every reference-removing issue for a deleted module into ONE commit and say
   in the message which issues it carries, so the plan's issue list still reconciles. This is a
   narrowing for one shape, not a licence to batch unrelated issues.
+
+### `integration-branch`
+
+**The branch finished work merges into, and the branch a phase cuts from.** Required: every review
+baseline (`<integration-branch>...HEAD`), every branch-cut rule, every PR target and every "is the
+base in sync with its remote" precondition in the pipeline is expressed against it. A consumer that
+has to guess takes whatever happens to be checked out, and a shared checkout legitimately ends a run
+on someone else's branch.
+
+Declare: its name; whether a later phase cuts from it or from the previous phase's still-unmerged
+branch; and that **merging a PR is always the human's call**, never a command's.
+
+**A project with a SINGLE branch is a valid answer, and it is not silence.** Say so explicitly,
+because then every stacked-PR, retarget and release rule downstream has **collapsed to one branch**,
+and a consumer must say it collapsed rather than quietly skipping the step — a skipped step and an
+inapplicable step read identically in a report, and only one of them is fine. Work still happens on
+a branch and still opens a PR; there is simply no second target to retarget to.
+
+### `release-branch` *(optional — a project may have none)*
+
+The branch that deploys. Where it exists, the pipeline's last act is a release PR from the
+integration branch to it, and the rule that no phase branch ever targets it directly.
+
+Absent → **the release-PR step is skipped and the skip is stated**. Note why this one is optional:
+not because it needs a tool installed, but because the *thing itself* may not exist. Consumers need
+the same if-absent branch either way, which is why the contract's test (rule 4) is about what a
+consumer must carry, not about what makes a project unusual.
 
 ### `model-per-role` 🔒
 
@@ -231,10 +288,92 @@ these: it proposes content in its return and the merging session writes it. Stat
 phrase once read as self-granting to an executor, which was correctly told by its own relay that an
 outflow duty on a shared record was unperformed — and the only correct response was to hand it up.
 
+### `backlog`
+
+**Defined by what it must DO, not by where it lives**: a durable list of open work with **stable
+IDs** and an **archive** for closed items. A tracker, a journal file, a label in an issue system —
+the shape is the project's; the three properties are not. Every triage disposition in the pipeline
+("journaled", "deferred", "not scheduled", "resolved → archived") names this capability, and a
+disposition with nowhere to land is a finding that was dropped.
+
+Why each property, each paid for:
+
+- **Stable IDs** — a finding is cited from a review report, a commit message, a plan and a PR body.
+  Renumbering breaks every citation at once, so an ID is sticky even after its entry is archived.
+- **An archive** — a journal whose fixed entries stay listed is lying about the backlog. Outflow is
+  a triage duty equal to inflow: whatever resolves an entry archives it, in the same phase.
+- **Durability** — a finding that exists only in a summary's count is already lost; a count cannot
+  be triaged, cited or reopened.
+
+**Recording is TOTAL; the round cap gates the FIXING, never the recording** (see `reviewer`). And a
+record with no tree-change to make is still a record: give it its ID and write it **directly into
+the archive**, born closed, with the condition that would reopen it — so it lands where something
+reads it rather than in a report nobody opens.
+
+**The host conventions below ship as the RECOMMENDED TEMPLATE the install interview offers, not as
+requirements.** Take them if you have nothing; keep yours if you do:
+
+- sticky numbering with a header stating the **next free ID**, so two sessions cannot mint the same one;
+- born-archived records for findings with no tree-change;
+- a `**Provenance**:` first line on every entry — which phase, which round, and the exit state it
+  was journaled at — because a journaled finding's meaning depends on when and why it was journaled,
+  and intake cannot see that without it;
+- an amendment blockquote at the TOP of an entry rather than an edit to its body, so a decision that
+  changed the entry is visible above the text it changed;
+- a status line under any rollup entry (`N of M items remain — …`), because a 90 %-consumed rollup
+  looks identical to an untouched one.
+
+### `records`
+
+The four surfaces the pipeline keeps honest. Name where each lives; **if one is absent at install,
+create a minimal version** rather than running without it:
+
+1. **The backlog** and its archive — the `backlog` capability above.
+2. **A decision log** — dated, attributed product decisions, newest first: what was decided, by
+   whom, and what it superseded. A decision recorded only in the code it produced is invisible from
+   any other code, and one recorded only in a backlog entry disappears when that entry is archived.
+   Mark superseded entries rather than editing them away.
+3. **Phase-keyed artifacts** — plan, review reports, solutions log, per the `artifact-paths`
+   capability.
+4. **A practice doc** — where a measured lesson is backported into the law, one section per failure
+   the project actually paid for. It is the reason a run improves the next run instead of the
+   conversation it happened in.
+
+**Who writes them: the actor that MERGES, and nobody else.** That rule already lives in
+`shared-files` — cross-reference it, do not restate it, and note that a phase executor is the main
+loop of its own session and still may not write these: it proposes content in its return and the
+merging session applies it.
+
 ### `artifact-paths`
 
 Where the pipeline's artifacts live: specs, plans, issues, reviews, solutions log, tech-debt journal.
 Enables durable, tool-independent resume (state = artifacts + git, not the tool).
+
+**Key the roots by ROUND, not by date, and say so here.** A bare date collides the moment a second
+piece of work starts the same day, and the collision silently overwrites the first round's plan.
+Declare the key (a date plus a short round slug is the shape that works), that **all roots use the
+SAME key for one round**, that artifacts inside are **phase-keyed** (one file per phase and per
+review round — never a sibling phase's section overwritten), and that a consumer **lists the parent
+directory before writing**: an existing directory holding different work means you need your own
+key, never a shared one.
+
+### `orchestration-tool` *(optional)*
+
+A harness tool that runs **scripted multi-agent workflows** — encoded stage dependencies, validated
+structured returns, background execution, resume from a run id. Declare how it is invoked, what its
+script language and authoring reference are, and whether resume re-runs a stage from scratch.
+
+**Absent → plain agent dispatch is the path, and that is the default everywhere in this package**:
+one dispatch per stage, each carrying its schema as an enumerated return-format section in the
+prompt. The tool is an accelerator, never a requirement — the contract is identical either way and
+only the mechanism differs. Say that substitution happened; do not emit scripts you cannot run.
+
+**Declare it even if it is usually available, because availability is per-depth.** A tool granted to
+a main session is commonly *absent* to a background executor running below it, so every consumer
+must carry the dispatch path anyway and must check its own tool list before assuming the scripted
+one. Two resume hazards worth writing down if the tool has resume: a stage re-run from scratch
+applies its work **on top of its own residue** if the dead stage left edits in the shared tree, and
+a whole-run resume can re-run stages that already completed.
 
 ### `code-graph` *(optional)*
 
