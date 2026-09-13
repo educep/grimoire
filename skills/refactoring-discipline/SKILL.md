@@ -98,7 +98,17 @@ silently, scoring green over files the scanner never opens.
 The size limit has a failure mode of its own worth naming: **the cap starts editing the prose
 rather than the code.** On a file at its limit, a needed comment costs a commit, so what gets cut
 is documentation — in exactly the files where writing things down catches defects. When the cap is
-doing that, the split is due now, and "stop and report" beats shaving explanation to fit.
+doing that, the split is due now, and "stop and report" beats shaving explanation to fit. **A
+PROSE-ONLY correctness fix counts as a correctness fix**: correcting a comment, a docstring or a
+citation that currently states something false ships no executable line and is still a fix, and *"it
+is only prose"* is precisely the argument that gets it compressed away instead of made. One file at
+its cap was compressed twice to stay there, and a journaled defect's two-line record could not be
+written into it at all. At the cap, a prose correction is a split trigger like any other.
+
+**Where the work's own nature is to grow files, budget the split at PLANNING time** from the
+measured headroom, rather than reacting to the limit mid-round. One round took three structural
+splits as reactions to the cap — while its declared subject was adding measured explanation to two
+files that were already near it.
 
 ## Step 1 — Order of operations
 
@@ -133,6 +143,24 @@ In this sequence, every time:
   (raise inside it, watch the callers redden with the new module in the traceback), not that a bug
   reproduces; (c) **no test file touched by the extraction commit** — that is what makes the
   no-behaviour-change claim checkable from the diff alone.
+- **A refactor has TWO proof obligations, and the second is the one that fails.** Identity proofs
+  say the code is the same. They are not merely silent about the sentences that became false by
+  changing address — **they are the mechanism that produces them**, because identity guarantees the
+  prose was carried over unchanged, and unchanged prose is exactly what goes false when its address
+  moves. Three interface-preserving splits produced fourteen false sentences between them ("lives in
+  the sibling module", "the seam left open", a line count, a citation), every one relocated verbatim
+  by a commit whose header said nothing had been re-worded. So a split ships with *the code is
+  identical* **and** *every deictic sentence still resolves at its new address* — as a citation check
+  that RUNS, not a re-read. And a "split" that leaves both copies in place is not a move at all; say
+  which one you did.
+- **An allowlist or exemption keyed on a FILE PATH is RE-PATHED when code moves, never extended.**
+  A move that GROWS such a list has silently widened whatever the list grants — the path half of the
+  key is load-bearing, because it is what stops a copy-paste of a safe pattern into a new module.
+  Verify by planting the real violation in the NEW module and watching the census redden.
+- **When the rule you need already exists in the tree, using it is mandatory and re-deriving it is
+  the defect.** A second copy inherits none of the widenings the original has earned. One hand-rolled
+  scanner was written one attribute short of the correct shared one, under documentation claiming
+  the shared module's rules were imported rather than restated.
 - **Every step independently verified.** Run the affected module's test suite plus the project's
   format/lint/type gates after *each* step, not once at the end. A step that can't be verified
   in isolation is too big — break it down. Refactor only on green (see the tdd skill): never
@@ -158,6 +186,10 @@ In this sequence, every time:
   find-replace did what it was told.
 - **Don't manufacture seams.** A long-but-cohesive file is not a bug. Inventing responsibility
   boundaries to produce files under the threshold is the failure mode this skill exists to stop.
+- **Delete a dead artifact on a REACHABILITY argument — nothing can ever execute it — never on a
+  usage argument.** "Nobody calls it today" deletes things that are one configuration change from
+  live. Two dead artifacts in one section got opposite and correct dispositions only because
+  somebody made that distinction explicit.
 
 ## Done checklist
 

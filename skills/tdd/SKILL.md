@@ -43,6 +43,29 @@ So: **for each new conditional, name the fixture that takes each arm.** If you c
 untested. And before trusting any test written to catch a specific defect, break the fix and watch
 that test — and only that test — go red.
 
+Three refinements on "break it and watch it redden", each of which caught a test that could not
+fail while its author believed it had been proved:
+
+- **Mutate to a WRONG VALUE OF THE SAME SHAPE, not to absence.** A deletion probe is structurally
+  blind to a value that is *present but wrong*: deleting changes the shape, and any incidental shape
+  check reddens for a reason unrelated to the assertion under audit. One 28-row deletion matrix
+  scored an ordering assertion green because deletion tripped a length check, while that same
+  assertion was simultaneously accepting three different wrong orderings. *"27 of 28 reddened"* was
+  true and was not the same claim as *"27 of 28 are evidence"*.
+- **A REPAIRED assertion is a new claim — run it against unmodified code before trusting it.**
+  Strengthening a weak assertion means writing a stronger claim about what correct code produces,
+  and that claim can be wrong in a new way. A fix round that only re-runs the red case replaces a
+  decorative assertion with a false one. Assumptions about *rendered* output — generated queries,
+  serialized payloads, template text — are claims to measure, never to derive from the source that
+  produces them.
+- **A bounded predicate has TWO edges; pin the one you are not thinking about.** Any exception
+  guard, rate limit, allowlist, status set or numeric range has an upper edge (what it must not let
+  through) and a lower edge (what it must not absorb). A finding points at one of them, and that is
+  the edge you will pin — so **write the other edge's test in the same commit**. One guard, narrowed
+  to the class a reviewer pointed at, absorbed the failure it was aimed at and let a *sibling* class
+  of the same parent crash the page the guard existed to protect: one word too narrow, in the
+  direction nobody had written a test for.
+
 ## The fix and its proof share a path
 
 Name **every route** a behaviour has — preview vs. commit, per-tenant, per-locale, per-outcome —
@@ -59,6 +82,34 @@ lacks the case. Two corollaries:
   always covering demand, a worked example where either branch picks the same value, all-rejection
   candidates — cannot distinguish them, and **the absence of such an input from the corpus is a
   finding, not a gap**. Boundary values can hide a guard entirely (a zero multiplier pins nothing).
+- **A fixture's type comes from the production declaration, not from what reads nicely.** A guard
+  against a bad coercion was handed the one input type for which that coercion happens to succeed.
+- **A probe that asserts an AXIS varies only that axis, between two otherwise-identical callers.**
+  One caller plus a status code measures every gate at once and attributes the answer to whichever
+  one you had in mind. One probe took three corrections before it measured anything: restricted to a
+  verb twelve doors do not accept; then using a verb that resolves no action, so every override took
+  its fallback branch and the probe measured a branch no real caller reaches; then comparing raw
+  status codes, which a *different* axis's gate also produces. What worked: two callers differing
+  only on the axis, compared on refusal-ness rather than on the exact code. **And a probe returning
+  zero proves nothing until it has returned non-zero on a known positive** — one reported "nothing
+  found" because its own marker was being escaped.
+- **Delete the non-code the behaviour depends on, and run the suite.** For every attribute, markup
+  element, ordering of decorators or explanatory sentence a behaviour rests on: remove it and see
+  what reddens. One sweep found seven behaviours — a security header, an event target, a hidden
+  field, a decorator's position — each deletable with the whole suite green.
+- **Write the pin against the known-good baseline and watch it redden BEFORE the change touches the
+  file.** A pin written afterwards only describes what the change produced. The one pin written
+  ahead of a rewrite caught a dependency that ten existing tests would have stayed green through
+  losing.
+- **A guard's self-test may not mutate the tree the other tests are reading.** Planting a violation
+  into the real source roots passes alone and reddens an unrelated census the moment the suite runs
+  in parallel — the failure surfaces far from its cause, in a file nobody touched. Plant in a
+  temporary tree instead, and prove the ROOTS separately: one assertion that the scanner finds a
+  planted violation in a temp tree (the walk and the pattern work), one that each declared root
+  resolves to a real directory containing the kind of file scanned (the roots are not typos).
+  *Corollary of the same shape*: a source-scanning guard must skip comments, or it flags its own
+  documentation — a comment explaining a defect necessarily spells the defect — and teaches the next
+  author to delete the documentation.
 
 ## Absence is not behaviourally testable
 

@@ -57,6 +57,15 @@ layer → break into file-disjoint groups, recombine at the PR boundary.
 The command that leaves the working tree formatted and statically clean. Every implementer ends in
 this state before returning. May be `none`.
 
+**Declare what it does NOT cover, and how to invoke it without the project's task runner.** Two
+mechanical facts, each of which has let a real defect through: a lint command scoped to the source
+directories does not cover the **test tree**, so a static error introduced in a test module passes
+every gate until the linter is pointed there explicitly; and a **dead-code detector finds what a
+linter does not** — stranded returns left behind by collapsing call sites onto a shared helper
+passed the linter and were refused at full confidence by the dead-code hook. Also give the direct
+form of each command: a task runner is not always on the path of the machine an agent is running on,
+and its "command not found" reads like a broken toolchain rather than a missing binary.
+
 ### `verify` *(optional)*
 
 How correctness is checked: test command(s), and/or static checks (`terraform plan`, linters,
@@ -76,6 +85,33 @@ Two operational declarations that save real incidents:
   test hazards worth pinning (e.g. throttle windows aligned to the wall clock — pin the clock in
   those tests rather than racing it).
 
+Three more that are cheap to write down once and expensive to re-derive every phase:
+
+- **If the full run exceeds the harness's ceiling, declare the CHUNKS verbatim and the partition
+  proof.** Name each chunk's command, and the check that the chunks' collected counts sum to the
+  whole suite's collected count — that sum, not repetition, is what guarantees nothing escaped.
+  Green chunks are **banked**: never re-run one "to make sure", and never kill and restart a chunk
+  that nears the ceiling (a restart pays for the whole chunk again and forfeits the arithmetic).
+  Declaring the protocol without its commands is what makes every phase re-derive the boundaries;
+  the counts themselves drift and are an example, not a target.
+- **State the runner's fail-fast default, and that a BLAST RADIUS is measured with it off.** A
+  population cannot be swept from a truncated list: under a low fail-fast cap, a partial run once
+  reported eleven failures where the whole suite held fourteen, and the sweep would have shipped
+  with three survivors. A change whose reach is unknown runs the suite once uncapped, sweeps the
+  complete list, then runs it again as the proof. The cap is for the edit-run loop, never for
+  measurement.
+- **Say how a long run is launched and watched**: detached with progress printed, then waited on
+  inside a single foreground call. A run backgrounded inside a turn dies with the turn, and a run
+  piped through a truncating filter writes nothing until it ends — both read as a hung suite.
+
+**Where a lighter review tier skips the full run, the verification set it DOES run is the whole
+proof — so derive it from the doors the diff touches, and re-derive it after every fix round.** One
+round inherited its set from the plan; a fix round then touched a new entry point, the set was not
+re-derived, and nine pre-existing tests in three directories the set did not cover went red on the
+integration branch's doorstep. List each production symbol the diff changed, search the test tree for
+its callers, and add every directory that hits one; a fix that nothing pins gets its pin in the same
+round.
+
 ### `apply` / `deploy` — GATED 🔒
 
 The commands that **mutate live or external state irreversibly** — deploys, `terraform apply`,
@@ -89,6 +125,18 @@ prod" — that's why this list is human-confirmed, not detected.
 Commit message format (e.g. `type(scope): summary`), branch naming, base branch, footer rules, and
 the invariant that **the main loop owns all git** — implementer agents never run git.
 
+- **Every commit message goes through a FILE, never an inline argument.** A shell interprets what it
+  finds in an inline message: a backtick runs a command substitution and silently eats the clause
+  around it, and a quote-dense message can break the parse outright. Write the message, then commit
+  from it.
+- **A DELETION batch commits by IMPORTABILITY, not one-commit-per-issue.** The one-commit-per-issue
+  rule assumes every issue leaves a tree that loads. A batch that removes a module does not: the
+  commit removing the module and the commits removing its references are only *jointly* valid, and
+  commit-time hooks run against the staged tree, so the intermediate states fail the gate rather
+  than the review. Group every reference-removing issue for a deleted module into ONE commit and say
+  in the message which issues it carries, so the plan's issue list still reconciles. This is a
+  narrowing for one shape, not a licence to batch unrelated issues.
+
 ### `model-per-role` 🔒
 
 Model IDs by role — the crown-jewel policy (never one model for everything):
@@ -96,6 +144,13 @@ Model IDs by role — the crown-jewel policy (never one model for everything):
 - `orchestrator` — the main loop (judgment; stays light).
 - `implementer` — bulk file edits (cheap).
 - `reviewer` / `fixer` / `domain-verify` — judgment-critical (a wrong call is costly).
+- `derivation` — **read-only: the judgment model, dispatched with NO write tools.** For a census or
+  reachability question whose answer decides what the phase does. *Measured: this role produced one
+  round's most valuable output — it found that most of a table's rows were already closed by a
+  mechanism the plan had never looked for, and that the plan's proposed remedy was inert — and the
+  executor's own reading was that it did so **because** it could not edit. With no fix to write, the
+  cheapest path is to measure honestly rather than to justify a diff.* Give it the question and no
+  write tools.
 
 ### `reviewer` 🔒
 
@@ -130,6 +185,28 @@ two were "kept in sync". An executor dispatched the agent and then polled the re
 **A caller that is silent about persistence is a defect in that caller**, and the silence is
 invisible until it costs a runaway loop.
 
+**Say that EVERY review round's report is a FILE, and name who writes it.** One per round — the
+relay's and any closure review's included — written before the round is reported done, at the
+`artifact-paths` location. Since the dispatched reviewer returns and writes nothing, **whoever
+dispatched it owns the write**; inside a phase that is the executor, not the orchestrator. *(Added
+after this failed on two consecutive phases: one round's closure findings existed nowhere in the
+tree, and the next phase lost both of its review rounds — twenty-six findings — recoverable only
+because the reviewer agents happened to still be resumable. The cause was this section: it named the
+relay's report as a file and said nothing about the rounds', and "journal-only" was read as
+permission not to file at all.)*
+
+**If the project varies the review ceremony, declare the STOPPING RULE by measurement, not by
+schedule.** The shape that works: full ceremony while phases still yield serious findings; after N
+consecutive phases with zero high-severity findings across all rounds and the relay, the default
+tier drops to light; any serious finding at the light tier resets the counter and the next phase runs
+full. The counter's source is the review reports themselves, never a restated number.
+
+**If the project extends the relay with a bounded CLOSURE ROUND, declare it here** — the `review-gate`
+skill defers to this capability on that point. Declare what may be fixed in it (low-severity, cheap,
+in files the phase already opened), that its own scoped review is verification-only and journal-only,
+and that **the closure review suspends the class-sweep obligation**, because a terminal gate that a
+sweep can reopen is not terminal.
+
 ### `config-dirs` *(optional)*
 
 Directories holding **machine-read configuration** rather than prose — agent definitions, skill
@@ -147,6 +224,12 @@ manifests, harness settings. Two rules follow:
 Files only the main loop may write (e.g. a solutions log, the tech-debt journal, the plan/issue
 tracker). Implementer agents surface content for these in their structured return; the main loop
 applies it. Parallel writes corrupt them.
+
+**Say that "main-loop-owned" names the actor that MERGES, not whoever happens to hold the main loop
+of their own process.** A phase executor is the main loop of its own session and still may not write
+these: it proposes content in its return and the merging session writes it. Stated because the
+phrase once read as self-granting to an executor, which was correctly told by its own relay that an
+outflow duty on a shared record was unperformed — and the only correct response was to hand it up.
 
 ### `artifact-paths`
 
@@ -198,6 +281,16 @@ Project invariants a skill must honor (e.g. max file length, "scope every query 
 non-ASCII marker can crash a redirected report on a legacy-encoding console, precisely on the rows
 it existed to flag).
 
+**Declare what the product may ASSERT while a gate's data ships ahead of the gate.** A reversibility
+ruling often forces the split — land the data first, enforce it second, each independently
+revertible — and that opens a window in which the product *displays* a difference it does not
+enforce. The window is not a bug and needs no backlog entry, but showing a difference is itself a
+claim made to a customer, and no plan, entry or ruling will have anticipated it. The rule that
+generalises: **render a capability only where it is granted, and never render a mark for where it is
+not.** An absent line is true both before and after the gate ships, so no copy changes when the gate
+lands; an explicit negative mark is false for as long as the gate is missing, and a customer can
+check it.
+
 ### `refactoring` *(optional)*
 
 Read by the `refactoring-discipline` skill. Declares:
@@ -226,6 +319,27 @@ infra repos (`tfvars`, `.env`).
 
 Harness constraints for unattended runs: one command per call (no `&&`/`;`/`|` chaining), prefer
 dedicated file/search tools over shell equivalents. Keeps parallel, permission-gated execution clean.
+
+Three harness hazards worth declaring per machine, because each is silent and each has corrupted a
+measurement:
+
+- **Multi-line bodies passed inline through the shell are not always transported byte-for-byte.**
+  On some hosts an escape level is stripped in transit and quote-dense bodies break the parse — the
+  script then runs, its pattern matches nothing, and the symptom looks like a defect in the code
+  under test. **Write the script, the commit message or the body to a FILE and run the file.** On
+  record this has produced a literal control byte inside a pattern, a null byte inside a source
+  file, a mutation that printed success without landing, and a commit message with a clause eaten by
+  substitution.
+- **Evidence can be STALE rather than absent.** A file read can serve content from before the last
+  edit, and a scratch filename reused across rounds will be read as this round's result — one
+  leftover output file showed a plausible passing line from a previous round. Key scratch paths by
+  round, and re-read through a different tool when a result surprises you.
+- **Any copy, hash, patch or restore is done in BINARY, and the line-ending rule is keyed on the
+  path's declared text attribute, not on who wrote the file.** Text-mode writes, formatting hooks
+  and version-control normalisation all rewrite endings, and a hash taken over decoded text cannot
+  see it. Declare which paths the project normalises and which it leaves alone — a blanket rule is
+  wrong in both directions — and name the cheap detector (the version-control tool's own end-of-line
+  listing; a shell count of carriage returns is not one).
 
 ---
 
