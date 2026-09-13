@@ -17,6 +17,16 @@ come from the adapter (`reviewer`); the loop below is how the rounds are sequenc
 > **returns** findings and **the main loop writes the report file**, to the adapter's
 > `artifact-paths`. Never wait for the reviewer to write it — awaiting a file a subagent was never
 > told to create is how one run burned 191 polls on a file nobody was going to write.
+>
+> **EVERY round writes its own file, and that includes the relay and any closure review** — one per
+> round, written before the round is reported done. *(Measured on two consecutive phases: the first
+> ran its relay and left no report, caught only because the next reviewer noticed a plan tick citing
+> a report that existed nowhere; the second lost both of its review rounds — twenty-six findings —
+> recoverable only because the reviewer agents were still resumable. "Journal-only" names where a
+> finding may not GO, not permission to keep it out of a file.)* **A finding that exists only in a
+> summary's count is already lost**: a count cannot be triaged, cited or reopened. Never
+> reconstruct one from memory — ask the reviewer for it verbatim with re-review forbidden, and if it
+> cannot be recovered, record the gap as a gap.
 
 ## Review the exact tree, and pin it
 
@@ -37,6 +47,12 @@ view can reach. A
 user-facing change is only verified through the real entry point with the real data shape, and the
 cheap way to settle a rendering question is to render the fragment three ways instead of arguing
 about it. On re-review, **re-run your own previous probes** before trusting that a fix landed.
+
+**Text search proves what a file CONTAINS; it never proves what the file EMITS.** An artifact is
+not verified until it has been executed or rendered and its output inspected. One run's eleven
+scripted edits shipped a structurally broken output past 122 source-level assertions, a
+six-thousand-test suite, and a formatter that tidied the wreckage on its way through — every one of
+which was reading the source, and none of which was reading the product.
 
 ## Scope with WHAT CHANGED, never WHAT TO LOOK FOR
 
@@ -67,10 +83,17 @@ A finding either survives mutation or it is an opinion. The working set:
 
 - **Break the source at least three ways** and name, *before running*, the test expected to go red
   for each. A mutation that survives is a finding in itself — sometimes the best one of the round.
+- **The plant is repeated once per SPELLING and once per POSITION the claim covers.** A guard
+  whose documentation called it undefeatable died to a one-line counterexample a reviewer wrote in
+  minutes; elsewhere a single plant passed while six other positions of the same violation went
+  unseen. One plant proves one cell of the table.
 - **Positive control**: neutralize the fix in place, reproduce the original failure, restore. A
   control that does not fail is more often **a mutation that never landed** than a broken guard —
-  prove the mutation landed (diff or hash the mutated file, compare predicted vs. observed reds)
-  before crediting a clean control.
+  prove the mutation landed **by comparing the file's bytes, never by consulting the version-control
+  index** (one harness checked "did it land?" against an index diff and declared two landed plants
+  vacuous), and compare predicted vs. observed reds before crediting a clean control. A plant must
+  also be **reachable in the state the assertion is about**; an unreachable plant is a green control
+  with a different cause.
 - **Restore from an aside copy taken now and verified by hash — never from version control**, which
   restores to the last commit and destroys uncommitted work sitting in the same file. Aside copies
   have a lifetime: delete each one the moment it is consumed, or a stale copy silently reverts a
@@ -105,6 +128,103 @@ coarser key grants the exemption to neighbours nobody meant to exempt. And a gua
 documentation records what it is **measured** to catch, including what is structurally
 invisible to it.
 
+**And derive the population from the project's own LABEL for the thing, never from the module tree
+you expect to find it in.** A directory boundary is a *guess about where a label was applied*; the
+label — the decorator, the mixin, the section constant, the permission class — is the answer. One
+phase built two halves of one gate: the half derived from the routing table caught an endpoint
+mounted outside the expected tree that no walk of the UI could see; the half derived from the
+module tree missed five live doors the project's own label covered. Same phase, same author; the
+only difference was the source of the population.
+
+## Guard design: the five ways a guard turns out to measure nothing
+
+These are the defeats that recur. Each was found by a plant, none by reading.
+
+- **A proxy replaced by another proxy is not a fix, and a proxy is replaced at the UNIT the risk
+  lives in.** "A filter exists" is not "the filter excludes the attacker's row" — build the foreign
+  input and assert exclusion. One detector went through four generations inside a single review
+  loop, each a *different* structural stand-in, each feeling like progress: a validator exists → the
+  mixin is applied → the query carries a condition → (defeated by a condition that excludes nothing).
+  When you do replace a proxy, **name the unit the guard's own subject is counted in and assert at
+  that unit** — two successive replacements measured residual occurrences and then characters, while
+  the subject was occurrences; a proxy in a unit the risk does not live in cannot be strengthened,
+  only replaced. The tell: you cannot state the replacement's failure mode in one sentence using the
+  noun the guard's own name uses.
+  *A structural proxy is still worth shipping as a ratchet when the class you defend against is the
+  ACCIDENTAL form — but only if you measured which form that is and said so in the guard.*
+- **Ask what the NEW predicate cannot see, and write each answer down as a named bucket — then
+  assert the bucket set.** Replacing one predicate with a better one immediately produced six
+  further blind shapes, every one found where somebody asked that question and every defeat where
+  nobody did. A predicate with no bucket census is a proxy in better clothes. **Corollary for the
+  reviewer**: on a detector fix your first question is not "is the new predicate correct?" but
+  "what is the enumerated set of shapes it cannot see, and is that set asserted?"
+- **A guard's documentation explaining WHY its detection is sound is a specification for the next
+  evasion.** Four of one round's five defeats came from a boundary the fixer had announced in prose
+  — the comment was literally the recipe. Write the documentation, then plant against every boundary
+  it names before shipping.
+- **A guard whose verdict depends on reaching a later step must assert the earlier step was
+  reached.** One harness judged a second execution and reported a finding only on a specific failure
+  there; four of its thirty-one members could not even compile, so the second execution died with a
+  different message and every planted defect in them passed. The guard was green over 87% of a
+  population it claimed to execute in full, and its anti-vacuity companion (a minimum member count,
+  non-empty bodies) was satisfied by the broken members like any other. **Execute the member the way
+  the runtime would see it, or pin BY SET EQUALITY which members you could not**, so a member that
+  starts being skipped is an event and not a silent shrink of the executed set. This is the
+  set-equality question asked one level down: the population is pinned — is its EXECUTION pinned, or
+  only its size?
+- **A claim about a population is only as strong as the STEP THAT SELECTS the population.** A
+  containment test standing in for identity, an unexamined selector, a filter applied upstream of
+  the assertion — each leaves a claim that is true of nothing. One filter written to make a new
+  family of files measurable removed that family's own idiom before a single assertion saw it.
+- **A reader that decides reachability, ownership or counts PARSES its input; it does not match
+  text over it — and it counts the thing, not the line that mentions it.** A substring scan over
+  source treated a file named only in a comment as live; the naive comment-stripper written to fix
+  that then blanked real code after a comment marker inside a string.
+- **A coupling guard is keyed on what the CONSUMER consumes, not on what the producer contains.**
+  Read the consumer's code to the end of its own filter and key the guard on the population that
+  SURVIVES that filter. One guard was re-keyed three times — "the source contains the marker", then
+  "this page's include graph emits the marker", then finally "an element the consumer would actually
+  act on" — and only the third could redden. Then **plant the smallest real change that breaks the
+  consumer**, not the reviewer's counterexample: a plant that sweeps more than the real change
+  proves less than it looks like it proves.
+
+Three finishing moves, each cheap and each having caught a guard that measured nothing:
+
+- **Neuter the MECHANISM the check names and confirm the check notices.** Not the fix — the
+  mechanism. Two cells of one table passed with the component they exist to cover disconnected,
+  because an unrelated cascade happened to supply the same outcome; whatever stays green with its
+  named mechanism disconnected is asserting something else's work.
+- **An exemption's KEY and its SUBTRACTION are two separate claims.** Re-keying an exemption from
+  the file to the thing exempted fixes the first and leaves the second: where the exempt thing and
+  the forbidden thing can be the same string, subtracting *by value* masks every further instance
+  of that string. Assert what the subtraction retires, by member and count, in both directions.
+- **A control expires when the condition it rode on changes.** A discriminating control pointed at
+  the last unprocessed region of a sweep; once that region was processed, the control's plant
+  supplied its own evidence and held over an empty source. Any control whose proof depends on the
+  work being *unfinished* must be re-derived at the end of the work — and an emptied population read
+  by a set-equality check needs an anti-vacuity assertion beside it.
+
+**A declaration is EXECUTED on the axis it names, and a census carries one table per axis.** A table
+asserting *"two callers differing only in X get the same answer"* is satisfied by a door that refuses
+both of them — agreement recorded, nothing measured. When rows turn out to belong to a *different*
+axis, they cannot be parked in the only table that exists: the opposite claim (*"they differ, in this
+direction"*) is self-controlling in a way the agreement claim is not, because a blind probe satisfies
+"both answer the same" trivially and cannot satisfy "this one is admitted and that one is refused".
+So: **one table per axis, asserted disjoint, probed as a union** — the two tables make opposite
+claims about a row, so no row can sit in both, and walking the union means a row MOVED between them
+keeps the assertion it had and gains the new one. The same trap in miniature: a measurement is
+bounded by whether its fixture reaches the path at all — three probes intended to vary one axis once
+short-circuited to the same branch and rendered one answer three times, which read as agreement.
+
+**A narrowing is diffed against the space the guard must SEE, never against the population it must
+KEEP.** Keeping the right members is necessary and proves nothing: one fix round re-admitted the
+exact spelling the reviewer's plant used, verified the retired members stayed retired, and left two
+whole shapes invisible. And **a narrowing's lower bound needs a plant on the sibling you did NOT
+name** — narrowing a catch-all to a specific error class shipped with the excluded *subclass* pinned
+and the excluded *sibling* unpinned, so a different failure of the same subsystem would have crashed
+every page the guard protected. Name the parent, parametrise the plant over a subclass **and** a
+sibling, and grep the tree for the same construct before shipping.
+
 ## Read the comments as claims
 
 A comment saying "no path does X" is a census; "this is unreachable" is a measurement; "the only
@@ -123,7 +243,12 @@ property to protect above any single rule; nothing outranks a measurement.
 ## The main event: the previous round's fixes
 
 The recurring failure mode of fix rounds, in one sentence: *the author reasons about the state they
-are designing, not the state they are creating.* So the reviewer's first targets are:
+are designing, not the state they are creating.* **A fix round is the single most dangerous place in
+the work to write new code or a new claim** — measured across many phases, the round that repairs a
+defect reintroduces its shape, and the third occurrence of a class is repeatedly *inside the
+artifact written to prevent the second*. So the fix diff gets everything the original got: the same
+plants, the same re-derivation of the population, the same re-reading of the rule being widened. The
+reviewer's first targets are:
 
 - **Each fix, adversarially** — does it hold on the state the system actually produces, not the
   state the fix was named after? A guard keyed on one field of a two-field invariant; a lock taken
@@ -272,6 +397,22 @@ does not solve it. The relay does: **the final fix diff gets its own scoped, ver
 review** — its scope is exactly the commits that shipped *after* the last review of their phase and
 have therefore never been read by any reviewer — and its findings are **journaled, never fixed
 in-phase** — otherwise the loop recurses forever.
+
+**A project's adapter may extend the relay with a bounded CLOSURE ROUND** — check the adapter's
+`reviewer` capability before treating journal-only as absolute; where the two disagree, the adapter
+wins. The shape that works: after the relay, residue that is *low-severity, cheap, and in files the
+phase already opened* is fixed in ONE bounded round, then a **scoped verification-only review of
+that closure diff alone** runs and ITS findings are journal-only. The loop ends there, guaranteed.
+The point, in one owner's words, is *more fixes in-phase, so the phase generates less backlog and
+fewer loops.*
+
+**The closure review SUSPENDS the class-sweep obligation.** The sweep rule says an instance of the
+class you are already fixing, in a file you have already opened, is in scope — and at the closure
+review that would reopen the very loop the closure round exists to end. **A terminal gate a sweep
+can reopen is not terminal**, so the closure guarantee wins: its findings are journaled and filed,
+never fixed, however cheap and however clearly in-class. (Measured where both rules fired on the
+same three findings: filing them produced the better outcome, because the entry attacked the class
+by construction instead of the three instances.)
 
 That rule has exactly one legal departure, and it is narrow: **an introduced-here, user-facing
 regression** — created by this phase's own fix rounds — may be cleared with a minimal diff and a
