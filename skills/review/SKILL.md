@@ -89,7 +89,7 @@ beats an assertion, including the author's and including yours.
 *In one four-phase sweep, four of the ten defects found in a guard were found by a one-line plant;
 none was found by reading.*
 
-Two corollaries the same sweep paid for:
+Corollaries, each paid for:
 
 - **When you review a fix to a detector, plant the shape the FIXED detector's new boundary
   excludes** — not the shape that motivated the fix. Four generations of one detector were each
@@ -97,6 +97,27 @@ Two corollaries the same sweep paid for:
 - **A copy-aside and its restore are one operation and must be written in one language.** Path
   resolution differs between shells and runtimes on the same machine, and a restore that silently
   fails leaves the next measurement running against mutated code.
+- **A green positive control is a claim about the CONTROL first and the guard second.** Before
+  concluding a guard is inert, check that the thing you re-enabled is the thing the assertion
+  actually reads. Restoring the *container* is the easier edit and the one that comes to mind, and
+  it proves nothing about an assertion naming the *contained* thing — one control re-added a route
+  prefix while the assertion fetched a specific path beneath it, so the mutation landed, was real,
+  and changed nothing the test could see. "I re-added the route" and "I re-added the route the test
+  fetches" are different acts with the same commit message.
+- **Before calling a patch, stub or re-export a decoy, check the target's SHAPE.** A *traversal*
+  target — walking to a shared object and setting an attribute on it — mutates one object for every
+  caller everywhere, so no decoy is possible and retargeting it is readability, not correctness. A
+  *name-binding* target — a module constant, an imported name, an attribute of one module's own
+  namespace — rebinds only there, so the decoy is real and the claim owes a governance pair: the new
+  target observably governs, the old one demonstrably does not, at least one direction red-proved by
+  sabotage. When code has MOVED, the outcomes are not distinguishable by reading: some targets
+  survive, some fail loudly at patch time, and one stays alive only because an unrelated import
+  keeps the old name resolvable. That last is the dangerous one, and only running the sibling suites
+  finds it.
+- **A sentence claiming a guard FORBIDS something is a claim about the guard, and it wants a plant
+  like any other.** Write the thing the sentence says is impossible, run it, and ship the plant
+  beside the sentence. The worst instance on record sat one screen below the fix that was supposed
+  to have made it true — written by that fix.
 
 ______________________________________________________________________
 
@@ -131,8 +152,59 @@ the code rather than the framework:
   commit** — the fix and the loss of coverage arrive together, and the suite gets *greener*.
 - **An exemption keyed less specifically than the risk varies** — the entry grants more than its
   justification claims.
+- **A new instance of a shared infrastructure primitive** — a cache, a queue, a connection pool, a
+  storage alias — added beside an existing one. Diff the configuration, not just the new code: a
+  component that depended on the default instance can be silently repointed at a per-process one,
+  and the thing that breaks is usually a limiter or a lock whose whole value was being shared.
+- **Prose crossing a service boundary where a flag belongs** — a message composed by the layer that
+  does not know the reader, or a branch taken on whether a message *contains* some words. What
+  crosses a boundary is a machine-readable signal; the sentence is written on the side that knows
+  the user, and branching on copy breaks the day the copy is translated or reworded.
 - **Claim truth**: a comment, docstring, disposition or count that asserts something the code does
   not do, or a citation that does not resolve. No gate catches this class.
+
+______________________________________________________________________
+
+## How to falsify a written claim
+
+No gate catches a false sentence, so this is the reviewer's class alone. Five failure modes, each
+measured, each cheap to check once you know its shape:
+
+- **Verify the CAUSAL half, not the checkable half.** *"X, therefore Y"* is two claims and they are
+  never equally cheap. The temptation is to confirm the half a search answers — the cited line is
+  where it says it is — and treat the sentence as verified. One of the worst findings on record was
+  exactly this: the cited gate existed at the cited line, and could not produce the effect claimed,
+  because the state the claim assumed never occurs on that path. **Reachability is the usual shape:
+  does control actually get there, in the state the claim assumes?**
+- **A real mechanism is not necessarily THIS path's mechanism.** Corrected prose loves to name a
+  genuine mechanism that is not the one reached here. Two questions, not one: *is the mechanism
+  real?* — usually yes — and *is it the one this path executes?* One round produced six instances,
+  every one passing the first question and failing the second.
+- **A search can match your own correction and read it as the defect surviving.** A census over
+  prose counts the errata note you just wrote, because correction-tracking documents are made of
+  quotations. Open the hits and read their surroundings before counting them; a bare count cannot
+  distinguish an occurrence from a quotation of one. The inverse bites too — a case-sensitive census
+  that misses a differently-cased instance produces a false *absolute*.
+- **Authority does not decide which of two disagreeing copies is stale; a re-measurement does.**
+  The artifact that looks authoritative — the pin's documentation, the header, the reviewer's own
+  instruction — is a copy like any other. One review found a figure stated three ways against a
+  guard's documentation and prescribed taking the guard's number; three re-runs measured the other
+  value, and following the instruction would have written a wrong number into four places under the
+  guard's authority.
+- **Check a claim that the law is SILENT before acting on it — hardest when the silence favours the
+  claimant.** "The rule doesn't cover this" converts a deviation into a documentation task and skips
+  the argument entirely. One proposal to fill such a gap would have destroyed the property it was
+  written to serve — and the rule was not silent; it said the opposite, twice, in the file the
+  proposer had open. Weight the check by who benefits. *Companion*: attribution is a claim too. A
+  quotation reported as fabricated was verbatim and real, just misattributed to the wrong file —
+  both readings cost work, so cite the file you actually read, and when a quotation "isn't there",
+  consider that it may be somewhere else before calling it invented.
+
+**The cheap remedy is deletion, not hedging.** Measured over six passes at the same over-claim:
+every pass that *rewrote* it with a supporting clause introduced a new false clause, because a hedge
+attaches fresh evidence and each attachment is a new claim. The single pass that produced zero false
+claims deleted the over-claim, added no citations, and ran net-negative on lines. **A deletion
+cannot be false.**
 
 ______________________________________________________________________
 
@@ -161,4 +233,18 @@ in a report nobody opens is indistinguishable from a finding that was dropped.
 
 **A disposition is a claim about the tree.** Write "fixed" only after re-reading the file, never from
 the intent that produced the edit — three dispositions written from intent in one review were all
-measured false by the next pass.
+measured false by the next pass. *Knowing this rule is not the same as having a step that enforces
+it: put the re-read inside the disposition-writing step, not in the reviewer's memory.*
+
+**A DEFERRAL is measured the way a fix is.** The sentence explaining why something was *not* done is
+the only thing standing between the next reader and looking again, so it earns the same evidence a
+fix earns. Two drafts of one deferral reason shipped wrong in a row — the first named a method the
+class did not have, so its stated re-check trigger could never fire (worse than no trigger, because
+it reads like a plan); the second asserted a refusal that a revert of the fix left green, because an
+earlier gate produced the same message. **And a re-check trigger must name a condition that is
+currently FALSE. Verify that it is.**
+
+**An erratum carries a HIGHER evidence bar than the claim it corrects**, because it arrives after
+the review scope has closed and nobody will check it. Two consecutive rounds posted corrections that
+were themselves wrong, each written fast off one line of evidence while a reviewer was still
+running; one would have replaced a true recorded measurement with a false one.
