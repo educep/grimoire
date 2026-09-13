@@ -42,6 +42,25 @@ instead of in the plan, and nobody can audit it there.
    **In a NEW project, create minimal versions of these before the first phase** — an
    orchestrator without record surfaces produces phases that evaporate.
 3. Verify ground truth: `git status` clean, current branch, `git log` HEAD vs remote.
+4. **If the adapter declares the optional `code-graph` capability, run its STALENESS CHECK.** The
+   check is cheap by contract; acting on a stale graph is not. Then do one of three things and **say
+   which in the launch prompt**:
+   - **FRESH** → nothing to say; the executor uses it under the adapter's rules.
+   - **STALE** → rebuild it, or tell the executor it is stale and must not be relied on.
+   - **ABSENT / tool not installed** → tell the executor the capability is unavailable, and let it
+     answer its questions the expensive way. **Do not have the executor install it mid-phase**: that
+     is machine state, not phase work, and a half-broken install is worse than none — the failure
+     surfaces as a confident wrong answer instead of an error.
+
+   **This is yours, not the executor's**, for the same reason git cleanliness is: it is a
+   precondition on the environment, the executor cannot cheaply fix it, and it is exactly the
+   coordination state §1 says only you can supply. *(Measured: a graph left dozens of commits stale
+   while its generator's interpreter had been removed from disk — so the capability was silently
+   unavailable to every phase that might have used it, and nothing said so.)*
+
+   **Reference the adapter's rules; never restate them here.** Especially the one that makes an
+   imperfect graph safe — *it may only ever ADD candidates to check, and is NEVER evidence for a
+   negative* — which belongs in the capability, where a copy cannot drift from it.
 
 ## 1. Launch a phase
 
@@ -113,8 +132,45 @@ a task that was sliced too big; the executor re-slices instead of nesting. No in
   - the report format: per-item verdict table (SHIPPED with commit + proof / DEFERRED with
     measurement / FALSIFIED with claimed-vs-measured), PR number, files touched with line
     counts, verbatim test tails, review residuals, bookkeeping proposals, deviations,
+  - **"The entry is a hypothesis, and so is every measurement in this brief."** Say that a
+    correction the executor can *prove* is a deliverable, not a deviation. (Measured: three
+    implementers in one phase each corrected the brief they were handed — a count, a file list, a
+    claimed mechanism — and all three were right. A brief that presents its own numbers as settled
+    buys silence on exactly the thing the implementer is better placed than you to see.)
   - **"Run to the PR and the final report without stopping to checkpoint."** (Measured:
-    executors checkpoint otherwise; resume them with a message if they still do.)
+    executors checkpoint otherwise; resume them with a message if they still do.) **And say what
+    it does NOT mean: it forbids checkpointing with YOU, not idling while a dispatch it made is
+    running.** (Measured: read as "never be idle", it converted every wait into a poll loop.)
+  - **"Your subagents' results must reach you as RETURN VALUES. Never poll the filesystem for a
+    subagent's completion, and treat the same read-only command run twice with no state change in
+    between as a hard stop."** Prefer synchronous dispatch where the executor's tool offers it, and
+    put parallel work in several dispatches in one message. (Measured three times across two
+    sessions — the first burned 191 directory listings. The prohibition alone failed within twenty
+    minutes; removing the *waiting state* is what held. An executor with no waiting state has
+    nothing to fill with polls.) **Give it as an intent, not as a flag**: the synchronous option
+    may not exist at executor depth, and an executor told to do an impossible thing spends
+    attention deciding whether it is failing. Where dispatch can only be asynchronous, a
+    notification that resumes the executor is fine and is not the polling this prohibits.
+  - **Tell a background executor HOW to wait, not merely that waiting is allowed — for it, ending
+    a turn IS stopping.** A background agent runs until it produces a final result, so a long
+    command launched detached with nothing left to do ends the turn and halts the phase. What
+    works: **block inside a single foreground call** — one bounded wait-and-check loop on the
+    output, breaking on the completion line. That is not the polling the prompt prohibits (the
+    prohibition is on separate read-only calls burning turns, never on one call that waits), and
+    you must say so, or an executor told both things obeys the prohibition by halting. *(Measured:
+    the same executor stalled twice on the identical wait, and ran straight through once the
+    mechanism was named rather than the behaviour scolded. Naming the behaviour cost a nudge;
+    naming the mechanism ended it.)* **Every turn boundary is a place a phase can die, so the
+    prompt's job is to leave the executor no reason to reach one.**
+  - **Match the instruction to the HOST, because "run without stopping" does not survive an
+    interactive one.** A background agent's turn runs until it produces a final result; an
+    *interactive* peer session ends its turn and waits, so every turn boundary looks like idle and
+    the phase stalls there. *(Measured on the first cross-session executor: four nudges over about
+    ninety minutes, each resuming a phase that was advancing correctly at roughly one ceremony
+    stage per turn.)* For an interactive executor, say explicitly: **"chain your next action in the
+    same turn rather than ending a turn to await acknowledgement; nothing in this phase requires my
+    input."** Subscribe to its idle signal rather than polling for it, and budget the nudges — the
+    design buys visibility and killability, and costs supervision.
   - **"Deliver the final report with the message tool. Text output does not reach me."**
     (Measured twice, in two different shapes: one executor checkpointed mid-phase; the next ran
     through correctly and then *wrote* an excellent report instead of *sending* it, and went idle.
@@ -124,7 +180,18 @@ a task that was sliced too big; the executor re-slices instead of nesting. No in
     that had to be reversed.)
   - **"Omit the `name` parameter on your own agent calls."** (Measured: naming a child makes it a
     teammate, and teammates cannot spawn teammates — it cost one phase a full round trip on three
-    parallel dispatches.)
+    parallel dispatches.) **Restate this in EVERY resume message, with the persistence line beside
+    it** — *"no name; a reviewer RETURNS its report by value; you write the review file from what
+    it returns; never poll the tree for a subagent's output"*. *(Measured on the fourth recurrence
+    of the class: the launch brief carried the rule, one mid-phase resume did not, and the executor
+    named its reviewer — a teammate whose report does not return by value — then polled the tree
+    every half-minute for an hour for a file no reviewer ever writes. **A rule stated once at launch
+    does not survive eight resumes; the resume message is the brief the executor is actually
+    reading.**)*
+  - **"Do not run version-control commands as the reviewer, and do not ask a reviewer to."** A
+    review is a read of a pinned tree; a reviewer that checks out, stashes or resets moves the tree
+    every other actor is measuring. (Measured: one dispatched reviewer moved the branch head
+    mid-phase.) Pin the tree first, then hand the reviewer the range and the file list.
 - **The launch prompt must NEVER contain anything about what the phase's outcome will CAUSE.**
   Not the next phase's subject, not a conditional the owner gave YOU, not anything that makes the
   executor's own reporting a gate on a downstream consequence. **An incentive cannot be cancelled
@@ -141,6 +208,19 @@ a task that was sliced too big; the executor re-slices instead of nesting. No in
   surfaces are yours; phase-keyed artifacts are the executor's and ride in its PR.
 - Do not duplicate or predict its work. If it checkpoints, resume it; if a dispatch is dead
   after a couple of minutes, abandon and relaunch.
+- **A resume is a whole brief, not an acknowledgement.** An executor that checkpointed mid-phase is
+  resumed in ONE message that says *"no input is needed from me; run to the PR and the report"* and
+  repeats the constraints that govern its next dispatches (the `name` rule, the return-by-value
+  rule, the artifact paths). Two messages — one to acknowledge, one to instruct — buy another turn
+  boundary, which is the thing you are trying not to give it.
+- **An executor you STOP mid-phase parks its work, and the resume brief says how to unpark it.**
+  Tell it to stash the working tree rather than leave it loose or commit it half-done, and say *pop
+  the stash first* in the resume. A tree left loose is indistinguishable from residue to the next
+  actor, and residue gets cleaned.
+- **The moment you measure a high-severity finding, journal it — in the same turn, with a
+  provenance line saying it needs a human.** Not at the report, not at the cut. A finding that
+  exists only in a summary's count is already lost: a count cannot be triaged, cited or reopened,
+  and the turn in which you measured it is the only turn in which you have the evidence verbatim.
 
 ## 3. Audit the final report (the gate)
 

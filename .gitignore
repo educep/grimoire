@@ -1,1 +1,10 @@
 .DS_Store
+
+# The package now ships one Python script (skills/code-graph/scripts/).
+__pycache__/
+*.py[cod]
+
+# Output of the bundled code-graph builder, if anyone runs it in this repo.
+# It is derived and decays on every commit — a committed graph is a
+# confidently-stale answer source.
+graphify-out/

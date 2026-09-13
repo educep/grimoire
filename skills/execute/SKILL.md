@@ -85,13 +85,39 @@ steps owed. This was measured head-to-head: the same rule, moved from prose into
 immediately held an issue that the prose version had waved through — anything the gate must not
 miss goes in the **schema**, not the prompt.
 
-Two rules about the prompts themselves. **Certifications are forbidden**: a prompt says what to
+Rules about the prompts themselves. **Certifications are forbidden**: a prompt says what to
 CHECK, never what is "already verified" — a criterion asserting an outcome unconditionally once
 made an agent write a test blessing the defect, and a mandated test is a spec too (agents must
 check the test CAN fail and say so when it cannot). And **every number the plan states — counts,
 sites, seams, censuses — is a hypothesis the executor re-derives before acting**; the stated
 census has been wrong in both directions often enough that following it is the error. When a spec
 contradicts itself, the STEPS are authoritative and the gap is journaled, never silently absorbed.
+
+Three more, each of which cost a round:
+
+- **Say in the prompt that the BRIEF is a hypothesis too, and that a correction is a deliverable,
+  not a complaint.** Three implementers in one phase each corrected the brief they were handed and
+  every correction was right, including one that refused an instruction naming a surface that does
+  not exist. An implementer who believes the brief is settled will implement against a falsified
+  premise and report success.
+- **A constraint governs nothing until it is INLINED into the child's own prompt** — including the
+  exact verification invocation, any size or shape limit, and what the agent may not do to shared
+  state. A warning given to the parent and not passed down is a warning that does not exist: one
+  brief warned about a known stall mode and did not relay it, and the first dispatched agent stalled
+  exactly that way.
+- **An instruction bullet must be safe read ALONE.** If a bullet needs its surrounding paragraph to
+  be correct, the qualifier belongs inside the bullet. One design forbade a blanket tolerance in
+  narrative and mandated one in a bullet two paragraphs later; the implementer followed the bullet
+  and produced the round's worst finding.
+
+**A population derived from the version-control INDEX is the index, not the working tree.** Guards
+and censuses that enumerate tracked files do not see a deletion until it is staged, and do not see a
+restoration until that is staged either. A leaf agent cannot stage — the main loop owns git — so a
+brief for any phase that deletes or moves files must say so: *"the populations read the index; a
+file you delete is still in every population until I stage it; do the deletions, send me the paths,
+and do not verify anything until I say so."* Without that sentence the agent measures its own
+unstaged state and reports the guard as broken; one phase paid a full round of its first issue to
+rediscover this.
 
 When correctness matters (money, tenancy, idempotency, anything the adapter's `constraints` flag),
 make it a pipeline: **edit → verify**, the verify stage on the judgment model
@@ -100,10 +126,32 @@ someone remembers to. Correctness-criticality overrides the lightest-mode instin
 money issue still gets the pipeline, slower on purpose — and the verify stage is **ring-fenced
 from budget trimming**: it is the only thing between a cheap model's mistakes and the review gate.
 A mechanical sweep is not exempt: its transform is valid only under a per-site precondition, so
-verify the precondition per site, or the sweep manufactures the mirror of the bug it kills. And a
-fix prompted by one instance **sweeps the class, not the pointed instance** — fixing only what was
+verify the precondition per site, or the sweep manufactures the mirror of the bug it kills. **And a
+scripted multi-site edit ships with one OUTPUT-LEVEL invariant over all its sites**, chosen so that
+a mis-anchored match at any single site fails it — ten of eleven near-identical replacements
+succeeded once, the eleventh was mis-anchored, and the uniformity of the diff is exactly what hid
+it.
+
+A fix prompted by one instance **sweeps the class, not the pointed instance** — fixing only what was
 pointed at leaves the identical defect one file over, where it becomes the next round's worst
-finding.
+finding. Two disciplines make that sweep actually happen:
+
+- **Restate the finding one level above the example before fixing it.** A fix written at the
+  altitude the evidence was presented at is a fix of the evidence: the reviewer showed one spelling,
+  the fix widened to that spelling, and four more spellings of the same class stayed open.
+- **Scope remediation as a TABLE, not a list: sites × surfaces.** *Sites* is every place the rule
+  runs — every door, every writer, every caller. *Surfaces* is every place the outcome is reported —
+  the response body, the notification, the operator's message, the confirmation dialog, the audit
+  record, the test that asserts it. Fill the table with what the code is **observed** to do, never
+  with what it should do; the findings fall out of the table instead of being hunted. Three
+  consecutive remediation rounds produced the same defect class because each drew its boundary at
+  the edge of the artefact that prompted the work — the finding's text, the reproducing mock, the
+  scanner's error message — instead of at the edge of the thing being fixed. Round 0's fixes created
+  four new defects; round 1's created seven.
+
+When a batch gets too big to read every site inside the executor, **buy the semantics from parallel
+read-only agents and keep the EDITS serial in one place.** Hundreds of sites across dozens of files
+become tractable that way and stay safe, because the only concurrency is in the reading.
 
 ## Commit (main loop only)
 
@@ -185,6 +233,34 @@ finalized record exists") while violating the invariant the guard was really pro
 record has been credited") — and reintroduced, within hours, the exact defect class the run existed
 to close.
 
+Two shapes of half-done door work, both measured:
+
+- **Narrowing an authorization check means narrowing EVERY half of the door.** A door normally has a
+  credential step and an authorization step, decided in different places. Change both or neither —
+  and pin the refusal where the credentials are submitted. One narrowing changed the authorization
+  half only, and the two halves then disagreed: the account authenticated, received a real session,
+  and was bounced back to the login form with no error, forever. The discriminating assertion is
+  **"no session was created"**; status codes and page content are both satisfied by the loop,
+  because in the loop the user really is logged in. The latency is the trap — no account matching
+  the new rule existed yet, so every test passed.
+- **An exemption on a door that PROXIES to another layer needs its matching pair, in the same
+  commit.** Ask where the work actually happens, not where the entry point is declared. One
+  allowlist exempted the entry point that *appeared* to perform a deletion; that entry point issued
+  a request back into the system, which landed on a second gate the allowlist never named, and the
+  corridor stayed welded shut while the exemption looked complete on the surface it was written on.
+  For every exemption, name the line that performs the write; if that line is in another layer, the
+  exemption is half-written. And prefer a test that **walks the whole corridor** over one asserting
+  each door's status separately — the second passes on both halves of a broken pair.
+
+**Two fixes in one hunk ship with their COMPOSITION test, or they ship separately.** When one commit
+closes two findings touching the same predicate, branch or data path, the gating tests must include
+the two changes active together on an input that exercises both — written *before* the combined
+hunk. Per-finding tests are structurally blind here: each was authored against a world where only
+its own fix exists, so each passes while the interaction regresses. One such pair reintroduced,
+through the commit that fixed it, exactly the user-visible regression the first of the two findings
+existed to prevent; both tests were per-finding and neither could have caught it. If the composition
+test is not worth writing, the fixes were not worth combining — split the hunk.
+
 ## The sibling-writer sweep, and its converse
 
 Any write to a field or status means: **enumerate every sibling mutator** — services, API actions,
@@ -211,6 +287,15 @@ environment kills long runs (backgrounded full suites have died silently at 15�
 a runner *configured* to skip a mechanism (migrations, commit callbacks) executes any code relying
 on it with exactly zero coverage, so name that gap instead of counting it as green.
 
+**The full verification run is the LAST action of a round.** If anything changes after it starts,
+the parts that already finished are not evidence — two chunks of one chunked run had never seen the
+final tree, and nothing said so until somebody asked whether every chunk had seen the same tree.
+
+**A commit-time hook is not a gate.** Hooks have reported "no files to check" on commits staging
+exactly the file types they exist to check, and have silently rewritten files as they passed —
+re-indenting ninety lines around a broken construct so the diff looked tidy. Run the checks by hand
+and re-inspect what the hook produced; a hook's silence is not a pass.
+
 The general principle: **prevention is friction; detection is the control.** Prompt prohibitions
 and hooks reduce how often the boundary check fires — the boundary check (the diff over the
 protected directory, the lockstep tool, the census re-run) is what actually catches; every bypass
@@ -224,7 +309,29 @@ preconditions get skipped, and then run only after the failure they exist to pre
 - **Restores come from an aside copy taken now and hash-verified — never from version control**,
   which restores to the last commit and has destroyed uncommitted work mid-mutation. Aside copies
   have a lifetime: delete each the moment it is consumed, or a stale copy silently reverts a
-  completed fix with every test green.
+  completed fix with every test green. *(The exception is narrow and worth naming: when the only
+  uncommitted change in the file is the accident you are undoing, version control is exactly the
+  right tool.)*
+- **Capture what you intend to restore BEFORE the first patch, and restore in a guaranteed-cleanup
+  block.** A restore value read at restore time returns whatever the previous patch put there — **a
+  restore that reads the thing it is restoring is a no-op wearing the costume of a control**, and a
+  control that does nothing makes the plant beside it look verified. Measured twice in one phase, in
+  two files, and caught only because a failure message did not match what a real failure would say.
+- **Copy, hash, patch and restore in BINARY.** Text-mode writes, formatting hooks and
+  version-control normalisation all rewrite line endings, and a hash taken over decoded text cannot
+  see it — one plant-and-restore reported *verified* while three files came back with their endings
+  changed. The rule is keyed on the **path's declared text attribute**, not on who wrote the file:
+  where the project declares a path's endings, normalise to them before staging; where the version
+  control system normalises the path itself, leave the endings alone and edit in binary preserving
+  them. And never split a write and its read across two languages or two tools — the same-named
+  temporary directory can resolve to two different places in one session.
+- **A restore anchor must be UNIQUE in the file.** Patching back by matching a snippet that occurs
+  more than once restores the wrong occurrence and leaves the tree plausible and wrong. Either
+  choose an anchor you have proved unique, or restore the whole file from the aside copy and compare
+  the hash.
+- **A command whose purpose is to INSPECT state contains no verb that changes it.** Never compound a
+  restore, reset or checkout with a status or a diff: one "check where I am" call with a checkout in
+  the middle destroyed forty minutes of uncommitted edits.
 - **A browser or UI gate needs a frozen tree**, not just a stable database — recompiling any
   artifact under a live server moves failures to unrelated tests, which then read as flakes.
 - **Widening a tolerance means you have not accepted that the signal is not the thing you care
@@ -285,6 +392,27 @@ Agents act on prose they cannot cross-examine, so the record's mechanics are cor
 - **Attribution is a claim**: verify introduced-here vs. pre-existing against the base branch
   before journaling it; mis-attribution sends the fix to the wrong owner and the lesson to the
   wrong ledger.
+- **Every sentence asserting what the tree, a dependency or the process does must be executable as
+  a COMMAND, and the writer runs it.** The scope is existence and status claims, not only numbers:
+  "it is filed", "this is the only place", "the suite is green" have each shipped unrun. A careful
+  reader's approval is not verification — one independent reviewer praised an assertion later proved
+  arithmetically incapable of failing.
+- **A number you did not measure in this round may not be written.** Not one copied from your own
+  earlier plan, not one handed up by a subagent, not one quoted from a reviewer. Counts transcribed
+  from the author's own previous plan were wrong in the direction that mattered; a set declared by
+  pasting a reviewer's three members measured four on its first run. And make a decomposition sum to
+  its own headline **in code**, so the arithmetic cannot drift from the prose.
+- **Never write a past-tense claim about an artifact you do not own.** State what you did, not what
+  you hope someone else does with it — a shipped comment said an item was "filed" against a record
+  the author had no write access to, and the same shape recurred for three consecutive rounds.
+- **Close a finding at the address it cites, then grep for every other copy of the sentence.** The
+  record describes the fix; it is never the fix. One finding was rewritten in the change log and
+  marked closed while the module kept the retired wording in its own name, documentation and failure
+  message.
+- **A deliberate deviation from a ruling gets its durable record in the same commit** — not a
+  mention in a transient channel, which is where two escalations of one deviation went and stayed.
+  And a check protecting a ruling **computes the reason**, rather than restating the ruling's value:
+  asserting that two numbers differ is not asserting the property those numbers encode.
 - **A derived artifact is owed by any commit that CHANGES its source, not only one that adds to
   it** — a one-character rewording regenerated nothing, no test could see it, and the stale
   artifact answered users wrongly in production's language. Regeneration tools that fuzzy-match
@@ -354,3 +482,17 @@ whole run.
 - Structured schema returns only — commit correctness never depends on parsing prose.
 - Cheap model for bulk edits; judgment model for review, fix, and domain-verify. Never one model for
   everything.
+- **When a census or reachability question DECIDES what the phase does, ask it with a read-only
+  agent** — the judgment model, dispatched with no write tools (the adapter's `model-per-role`
+  should name this role). Two such agents returned the measurements that killed a scheduled item and
+  exposed a constraint its entry never mentioned. The reason is structural, and the executors who
+  used it said so themselves: **with no fix to write, the cheapest path is to measure honestly
+  rather than to justify a diff.**
+- **Only one party mutates a shared working copy at a time, and a reviewer runs no command that
+  changes the branch, the index or the files.** One executor's measurements oscillated for minutes
+  because a reviewer was planting in the same tree; another reviewer left the branch pointer
+  somewhere the executor had not put it. The rule governs READING as well as cleaning: a dispatched
+  agent's tree is not final until its result has returned, so do not measure it, do not diagnose
+  from it, and never run a suite beside its verify stage. **And do not COMMIT while one is writing**
+  — staging by path does not contain a commit if a pre-commit step stashes the whole tree, including
+  the half-written files of an agent that has not returned.

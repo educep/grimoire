@@ -37,6 +37,47 @@ The full pipeline runs `extract` → `roast` → `to-plan` → `to-issues` → `
 | [`tdd`](skills/tdd/SKILL.md) | Test-driven development discipline: red, green, refactor, one behavior at a time, tested through the public interface. |
 | [`refactoring-discipline`](skills/refactoring-discipline/SKILL.md) | Structural refactoring of oversized files: diagnoses whether size is structural (split by responsibility, interface-preserving) or cosmetic (refuse to split), and never chops a file to satisfy a line count. |
 | [`adaptive-replanning`](skills/adaptive-replanning/SKILL.md) | How an unattended build loop recovers from a failed step: replan the remaining work from the current state instead of restarting or retrying blindly. |
+| [`review`](skills/review/SKILL.md) | The review *method*: how to scope a review, rate by reachability, prefer a plant to an inspection, report, and dispose findings. Loaded by every caller that reviews. It holds neither the project's checklist (that is the adapter's) nor where the report goes (that is the caller's). |
+| [`code-graph`](skills/code-graph/SKILL.md) | Build and use a structural graph of the project's own code to answer reachability cheaply — *can X actually produce Y?* Ships a working **language-agnostic** builder. Optional: it needs a tool install. Carries the rule that makes an imperfect graph safe — **it may only ever ADD candidates, and is never evidence for a negative.** |
+
+> **One executable, and it is deliberate.** Everything else here is prose you can read before
+> adopting it. `skills/code-graph/scripts/build_code_graph.py` is the exception: a code graph is
+> useless as a description of how to build one, and the wrapper turned out to be genuinely
+> language-agnostic — graphify's own detect/extract carry the tree-sitter grammars, so nothing in it
+> names a language. Point your adapter's `code-graph` capability at it, or write your own; consumers
+> depend on the capability, never on the script.
+
+## Agents and commands
+
+Skills are the semantics; **something has to call them.** These are the callers the skills above
+expect to exist. They are thin on purpose — each loads a skill and adds only what the skill
+deliberately leaves open.
+
+**The operating model, in one paragraph: commands are the compiler, skills are the semantics, the
+adapter is the configuration.** A skill says how a thing is done and names the project facts it
+needs by capability; the adapter declares those capabilities once per repo; a command sequences
+skills into a run and is where a phase's ceremony — batching, dispatch, the review loop, the record
+— actually happens. Nothing in a command carries a project literal: it reads the capability instead,
+and **a command whose capability is missing stops and asks rather than guessing**. That is why the
+same four commands below run a monolith and a microservice unchanged.
+
+| File | What it is |
+| ---- | ---------- |
+| [`agents/reviewer.md`](agents/reviewer.md) | The reviewer as a **dispatchable agent**, for orchestrated runs. **Install it under the agent-type name your adapter declares** — a named agent type that fails to resolve degrades silently into a weaker generic review. It **returns** the report and writes no files. |
+| [`commands/review.md`](commands/review.md) | The same reviewer as an in-session **slash command**, for reviewing now without paying for a subagent. Prints unless given a path. |
+| [`commands/macro-plan-extract.md`](commands/macro-plan-extract.md) | **Pipeline phase 1.** Turns whatever arrived — transcript, notes, review findings, backlog slice — into an investigated, prioritized `TODO.md`, routing each item by *who holds the missing answer*: settled → extract, owner → `roast`, the tree → investigate now. Writes the issue list. |
+| [`commands/plan-workflow.md`](commands/plan-workflow.md) | **Pipeline phase 2.** Compiles that list into a batch-ordered execution plan: file-disjoint batches, one PR per phase, `edit → verify` with mutation proof on every batch, and the full review ceremony (r0 → fix rounds → relay → closure) in the main loop. Agent dispatch is the default path; a scripted orchestration tool is an optional accelerator. Writes the plan, every review report, and the debrief. |
+| [`commands/fix-review.md`](commands/fix-review.md) | **The fix round.** Reads a review report, triages it, dispatches one judgment-tier agent per file-disjoint finding group, verifies at the layer the user sees, and writes a fix report beside the review it answers. Fixes re-enter the gate. |
+| [`commands/pr-review.md`](commands/pr-review.md) | **The whole-PR review.** The same reviewer over every commit on the branch against the integration branch, with an explicit baseline — and unlike the other two callers, it **writes its own report file**. |
+
+> **The rule these callers exist to demonstrate: every caller declares where its report goes, even
+> when the answer is "nowhere".** The four callers of the `review` skill differ — the agent returns,
+> `/review` prints, `/pr-review` writes its own file, an orchestrated stage has the orchestrator
+> write it — so none of them can inherit another's answer. In the host project the agent was silent about persistence while the
+> workflow command told the orchestrator to save what the agent returned, under a note claiming the
+> two were "kept in sync". An executor dispatched the agent and then polled the reviews directory
+> **191 times** for a file it was itself responsible for writing. A caller silent here is a defect in
+> that caller.
 
 ## How it works
 
@@ -84,12 +125,13 @@ created from scratch as the first act of working in a new project**:
    orchestrator's Orient step starts it from scratch, together with the record surfaces below,
    before launching the first round.
 
-3. **Record surfaces, committed in your repo.** A backlog + its archive (work that names a
-   tree-change vs. records with reopen triggers), a decision log (dated, attributed product
-   decisions — a decision recorded only in code is invisible), round-keyed artifact directories
-   (plans / reviews / solutions), and a practice doc where measured lessons get backported into
-   the law. New project → the orchestrator creates minimal versions before the first round; an
-   orchestrator without record surfaces produces rounds that evaporate.
+3. **Record surfaces, committed in your repo** — the contract's `records` and `backlog`
+   capabilities. A backlog + its archive (work that names a tree-change vs. records with reopen
+   triggers), a decision log (dated, attributed product decisions — a decision recorded only in
+   code is invisible), round-keyed artifact directories (plans / reviews / solutions), and a
+   practice doc where measured lessons get backported into the law. New project → the install
+   interview offers to create minimal versions before the first round; an orchestrator without
+   record surfaces produces rounds that evaporate.
 
 ## Recommended `CLAUDE.md` setup
 
