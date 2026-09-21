@@ -23,6 +23,7 @@ over inputs that were already phase-sized):
 | **phase** | one slice: one branch, one PR, one review ceremony, one executor launch | a review iteration |
 | **fix round** | one iteration INSIDE a phase's review loop (r0 → r1 → relay) | a unit of work |
 | ~~round~~ | **banned on its own** — it was used for both of the two above | — |
+| **tier** | **always qualified**: a *ceremony tier* is how much review and verification a phase runs; an *agent tier* is a depth in the hierarchy in §1 | the bare word, where the reader has to guess which |
 
 A workflow with one phase is a legitimate outcome for phase-sized work. It is a **smell** when
 the input was plainly bigger than one PR: that means the decomposition happened in your head
@@ -64,7 +65,37 @@ instead of in the plan, and nobody can audit it there.
 
 ## 1. Launch a phase
 
-**The agent hierarchy is exactly three tiers — never deeper:**
+**First: what CEREMONY does this phase run?** If the adapter declares `ceremony-tiers`, the answer
+is already written — the planning pass chose it by that capability's size-and-risk selector and
+stated the reading that produced it in the plan's header. Three things are yours, and none of them
+is re-deciding it:
+
+- **Read the sentinel and launch the matching brief.** The command that compiles a batch-ordered
+  execution plan belongs to the full tier only and refuses a light plan outright; a light plan's
+  per-item briefs were written by the extraction pass itself, so there is no second plan document to
+  go looking for. An orchestrator that goes looking either waits on a file nobody is writing, or
+  commissions a costlier second description of work whose briefs already exist.
+- **Re-tier only BEFORE the phase launches, and only on the owner's word.** Rewrite the header's
+  sentinel, state the recount beside it — the item count, and each risk call **in the words of the
+  adapter's own definition** rather than a paraphrase of what the item does — then launch from the
+  existing briefs. *(Measured: a recount that described an item as "re-reading a protected row",
+  when that item in fact added two new filtered queries, landed on the right tier and still read as
+  a self-contradiction to the reviewer, because the sentence understated the surface.)* A plan
+  already IN FLIGHT keeps its tier: a rule binds the artifacts compiled after it.
+- **Banner a plan compiled at the heavier tier; never rewrite it.** The header's sentinel wins over
+  every ceremony sentence in that plan document. Put a one-line *superseded by the header's tier*
+  banner on each ceremony section — the ceremony statement, the tracker boxes for the rounds the new
+  tier drops, the debrief and solutions entries — and leave everything else binding: the item order,
+  the serialization constraints, the commit recipe, the deviations. That file is the compiled plan's
+  record, and a light run still executes most of it.
+
+**Then FILL the tier's brief template — do not compose a brief.** The adapter names one template per
+tier. Replace its placeholders, leave its standing rules verbatim, and check that no placeholder
+survived. Composing one per launch is how the same standing rule arrives worded a different way
+every time, and the wording that goes missing in the rewrite is the one the last incident paid for.
+Everything below is what goes IN the placeholders.
+
+**The agent hierarchy is exactly three AGENT tiers — never deeper:**
 
 ```
 Tier 0  YOU (main session)      — orchestrate, audit, merge, bookkeep. Spawns Tier 1.
@@ -162,6 +193,15 @@ a task that was sliced too big; the executor re-slices instead of nesting. No in
     mechanism was named rather than the behaviour scolded. Naming the behaviour cost a nudge;
     naming the mechanism ended it.)* **Every turn boundary is a place a phase can die, so the
     prompt's job is to leave the executor no reason to reach one.**
+  - **And the wait must poll its OWN completion condition — never a backgrounded sleep.** The call
+    has to block on something that CHANGES when the work finishes: a stability check on the file the
+    child writes, a search for the completion line in its output. A backgrounded wait is not a wait.
+    *(Measured: three background sleeps returned in nine seconds apiece, the caller read their
+    returns as elapsed time, and concluded a child had stalled "after 45 minutes" while it was
+    working normally.)* A wait whose condition is the clock alone measures the harness, not the
+    work — and a wait that could outlast the harness's silence watchdog is split across several
+    calls rather than held in one, because the watchdog kills the quieter call and not the longer
+    one. This applies to YOU exactly as it applies to the executor.
   - **Match the instruction to the HOST, because "run without stopping" does not survive an
     interactive one.** A background agent's turn runs until it produces a final result; an
     *interactive* peer session ends its turn and waits, so every turn boundary looks like idle and
@@ -204,8 +244,17 @@ a task that was sliced too big; the executor re-slices instead of nesting. No in
 
 ## 2. While it runs
 
-- **Single-writer rule**: hold ALL your own edits while an executor is live. Shared record
-  surfaces are yours; phase-keyed artifacts are the executor's and ride in its PR.
+- **Single-writer rule — never TOUCH the tree while a child may be writing it, which is wider than
+  never editing it.** Hold your own edits, AND your reads-taken-as-measurements, AND your
+  verification runs, AND your commits. Shared record surfaces are yours; phase-keyed artifacts are
+  the executor's and ride in its PR. Each of the three wider touches has cost a run: a clean of a
+  running verifier's in-place probe files, a read that diagnosed four failures which did not exist,
+  and a commit whose commit-time hook stashed the WHOLE tree including a child's half-written
+  files — staging by path does not contain that, and the stash restoring cleanly was luck, not a
+  control. *"Never commit"* is the narrowest of the three, and stating only it invites the other
+  two. **Another actor's in-flight state is not residue**: a dispatched child's tree is not final
+  until its result has returned, so do not measure it, do not diagnose from it, and never run a
+  verification beside its own.
 - Do not duplicate or predict its work. If it checkpoints, resume it; if a dispatch is dead
   after a couple of minutes, abandon and relaunch.
 - **A resume is a whole brief, not an acknowledgement.** An executor that checkpointed mid-phase is
@@ -236,6 +285,30 @@ re-review:
    reviewed-by-executor-only — read that diff personally.
 4. Falsified-claim entries: confirm the falsification (it changes the archive wording).
 
+**Scale the probes to the phase's CEREMONY TIER, and say in the report which shape you ran.** Where
+the adapter declares `ceremony-tiers`, its audit declaration is the source. The shape that works:
+
+- **Full tier** — the whole verification partition against a freshly collected count, plus plants
+  restored by hash.
+- **Light tier** — a freshly collected count **equal to the executor's**; the **door-derived**
+  verification set (every production symbol the diff changed, searched through the test tree for its
+  callers and its route names, every directory that hits one); and two or three plants restored by
+  hash. It does **not** re-run the partition the executor already ran green: that re-run is the
+  ceremony the tier removed, and paying for it here gives back the whole saving while adding no
+  information.
+  - **When the derivation comes up empty** — a diff that touched no production symbol any test
+    names — the audit runs the catch-all chunk instead of nothing. Never derive the population from
+    the test files the diff happens to have edited: the ordinary bug fix edits none, and that audit
+    would run zero tests while reporting that it ran.
+  - **"Equal to the executor's" names a TREE, not a number to match by luck.** Take the count on the
+    branch head the executor reported, BEFORE the merge. Collect it afterwards and the two
+    legitimately differ by whatever else landed on the integration branch in between, and the audit
+    spends its turn explaining a delta it created itself.
+  - **What to plant**: the flagged item's own risk claim is ALWAYS one of them. That claim is the
+    one thing the light tier bought a verifier for, so it is the one thing the audit re-proves
+    independently. The others come from the phase's central mechanism, never from whatever is
+    cheapest to break.
+
 Then fork, per the owner's standing protocol:
 - **Clean → merge the PR and proceed to bookkeeping. Then stop.**
 - **Not clean → do not merge.** Investigate the discrepancies, report them with evidence, stop.
@@ -246,6 +319,15 @@ and delete no branch until the whole stack has landed — deleting a branch that
 request's base can close that request irrecoverably; deploys are the owner's step, never a
 side effect of a merge.
 
+**At a RELEASE, the full verification run is owed by the TREE, not by the calendar.** Compare the
+release commit's tree for the adapter's declared code paths against the tree of the last commit that
+had a full green run, and state the comparison you ran whichever way it came out. A phase's green is
+green for ITS branch point, and the integration branch takes merge commits and sanctioned
+bookkeeping after it, so *"the executor already ran it"* is not evidence about the tree you are
+releasing — and equally, re-running the suite over a tree that is byte-identical is pure waste that
+tells you what you already had in hand. A delta confined to documents, reports and records is
+bookkeeping and triggers nothing.
+
 **Triage is the one thing that cannot be delegated.** The executor PROPOSES classifications; you
 DISPOSE. Deciding what is a tree-change, what is a record, and what is review residue determines
 the backlog's arithmetic and therefore what the owner sees — and the actor closest to the findings
@@ -253,6 +335,14 @@ is the worst-placed to weigh them. So: **a conditional the owner sets is evaluat
 the proposals plus your own read of the diff, never accepted as a self-reported number. Check the
 executor's own classification against its own entries; a phase that lists an item as new open work
 and then describes it as born archived has miscounted, and that miscount is yours to catch.
+
+**The ceremony counter is triage too, and its arithmetic is yours.** Where the adapter declares a
+stopping rule, the executor reports each serious finding with its subject and cut-point readings and
+**you** decide the reset, from the review file and your own read of the diff — never from a
+self-reported verdict, and never from the finding's location in the diff, which is the axis that
+looks decisive and is not. Wrong in either direction is expensive: a reset nobody earned buys the
+next phase a ceremony its cleanliness did not pay for, and a reset missed sends a phase that
+introduced a real defect into a lighter pass.
 
 ## 4. Bookkeeping (yours, landed directly on the integration branch if the project sanctions it)
 
