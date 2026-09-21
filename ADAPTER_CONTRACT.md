@@ -40,6 +40,7 @@ answer is "none":
 | `release-branch` | Which branch deploys? | Record `none`. The release-PR step is then skipped, and skipped out loud. |
 | `backlog` | Where is the durable list of open work, and where do closed items go? | **Offer to create one, and ask where it lives** — the recommended template is in the capability below. Do not invent a path silently; a backlog nobody opens is the same as no backlog. |
 | `records` | Where do the four record surfaces live — backlog, decision log, phase-keyed artifacts, practice doc? | Offer to create a minimal version of each missing one. An orchestrator without record surfaces produces phases that evaporate. |
+| `ceremony-tiers` | Does every phase run the same review-and-verification ceremony, or is it chosen per phase by size and risk? | Record `one tier`, and say which. Consumers then run that ceremony for every phase and must say the choice collapsed rather than silently skipping the selection step. |
 | `orchestration-tool` | Is there a harness tool that runs scripted multi-agent workflows, and how is it invoked? | Record `none`. Plain agent dispatch is the path — it is the default anyway, so nothing is lost but the accelerator. |
 | `verify` | …and which checks run at push/merge that a commit-time gate does not catch? | Record `none`, and say that opening a PR needs no hand-run check. |
 | `code-graph`, `docs-lookup` | Is the tool installed / reachable? | Record `none`. Consumers answer the question the expensive way and **say** they did. |
@@ -52,10 +53,11 @@ confirm the 🔒 fields even when a draft filled them in.
 ## Capabilities
 
 Each heading is a capability a skill or command may reference. `verify`, `apply`, `docs-lookup`,
-`constraints`, `refactoring`, `release-branch`, `orchestration-tool`, `code-graph`, `config-dirs`
-and `shell-conventions` may be **absent** — a consumer that needs an absent capability degrades
-gracefully (e.g. no `verify` → review-only) and **states what it skipped**. Everything else is
-required, and a consumer that finds it missing stops and asks rather than guessing.
+`constraints`, `refactoring`, `release-branch`, `ceremony-tiers`, `orchestration-tool`,
+`code-graph`, `config-dirs` and `shell-conventions` may be **absent** — a consumer that needs an
+absent capability degrades gracefully (e.g. no `verify` → review-only) and **states what it
+skipped**. Everything else is required, and a consumer that finds it missing stops and asks rather
+than guessing.
 
 ### `overview`
 
@@ -133,6 +135,17 @@ re-derived, and nine pre-existing tests in three directories the set did not cov
 integration branch's doorstep. List each production symbol the diff changed, search the test tree for
 its callers, and add every directory that hits one; a fix that nothing pins gets its pin in the same
 round.
+
+**Say what a DELETION owes beyond the tests of the files it touched.** Removing an artifact — a
+module, a page, a script, an asset — silently invalidates everything KEYED on it elsewhere: census
+rows that enumerate it, frozen ratchet or baseline entries that list it, reachability guards that
+assert it is reached, and companion assets loaded only by it. None of those live among the deleting
+work's own files, so a per-item verification is blind to them by construction and a review scoped to
+the diff sees a clean removal. Declare that a batch containing a deletion runs the full set once
+before its PR opens, and name the keyed artifacts this project actually keeps, so the sweep has a
+list instead of an instinct. *(Measured: one dead page's removal broke two frozen ratchet rows and
+stranded a script nothing loaded any more; the whole-suite run was the only thing that caught
+either.)*
 
 **Name the checks that run at PUSH or MERGE rather than at commit, and that the executor therefore
 runs BY HAND before opening a PR.** A gate that fires once per branch is the one nobody has seen
@@ -258,11 +271,101 @@ consecutive phases with zero high-severity findings across all rounds and the re
 tier drops to light; any serious finding at the light tier resets the counter and the next phase runs
 full. The counter's source is the review reports themselves, never a restated number.
 
+**Declare which findings RESET that counter, with TWO tests that must both hold.** *Subject* — the
+finding's **own** file, not the file it talks about: a serious finding in a test that proves a
+product defect is a product finding, while one against the test tree, the tooling or a document is
+journaled and dispositioned like any other and does **not** reset. *Cut point* — **would the finding
+exist against the tree the phase branched from?** If it would, the phase reported a defect it
+inherited: journal it, file it with its provenance, and do not reset, **whatever file its wording
+lives in**. In-diff is the wrong axis, because a comment a phase writes *about* an older defect puts
+the finding inside the diff while the defect stays older than the branch. A phase is charged for the
+code it wrote, not for the honesty of looking around it — charge it for the latter and runs learn to
+stop looking. *(Both halves were reached by falsifying an earlier wording of this same rule, twice,
+inside one review loop.)*
+
+**And say whose evidence the counter is counting.** A clean phase at a lighter tier is one review
+pass; a clean phase at the full tier is several plus a relay. A threshold calibrated on the second
+does not automatically transfer to the first, so a project running both tiers records that as an
+open question against its own threshold rather than assuming it holds.
+
 **If the project extends the relay with a bounded CLOSURE ROUND, declare it here** — the `review-gate`
 skill defers to this capability on that point. Declare what may be fixed in it (low-severity, cheap,
 in files the phase already opened), that its own scoped review is verification-only and journal-only,
 and that **the closure review suspends the class-sweep obligation**, because a terminal gate that a
 sweep can reopen is not terminal.
+
+### `ceremony-tiers` *(optional — a project may run one ceremony for everything)*
+
+Whether the ceremony a phase runs is **chosen per phase, at planning time, by the size and risk of
+the work** — and by what. A project with a single ceremony declares that explicitly, because a
+consumer must be able to say the choice *collapsed* rather than quietly skipping the step. Optional
+here for `release-branch`'s reason, not rule 4's: the second tier may simply not exist.
+
+Where more than one tier exists, declare each of these:
+
+- **The tiers, and the shape of each.** What the full tier runs; what the light one **drops** and
+  what it **keeps**. The split that works: light drops the *ceremony* — the relay, the closure
+  round, the closure review, the debrief, the solutions log — and keeps the *work*: the
+  implementers, ONE review pass, ONE fix round with the gates re-run after it, and the executor's
+  own full verification run, once, at its close. Add the one exception worth its cost: **a second
+  review pass over the fix diff, mandatory whenever the first pass returned a finding at the top
+  severities and forbidden otherwise** — at a cap of one round the fix is otherwise the only
+  unreviewed change in the phase, which is the state the relay exists to prevent at the full tier.
+  **Light drops ceremony, never the suite**: say that in the declaration, because a tier loses a
+  gate nobody decided to remove whenever a run is left to infer it.
+- **The selector, as a rule a plan can apply before the code exists**: a size threshold, and a RISK
+  criterion that is a **floor** no other input may lower. The risk criterion needs a mechanical
+  definition or it is re-argued every phase. The shape that works separates **ADDS** from
+  **TOUCHES**. A phase **ADDS** a risk surface when its diff creates a place where such a decision
+  is made for the first time — a new record type carrying the protected relation, a new serializer
+  or form with a writable relation to a protected record, a new route or view over protected data, a
+  new permission predicate or gate, a new field or computation that determines money — and **ADDS
+  forces the full tier**. A phase **TOUCHES** one when it changes an existing one: a new filter on
+  an existing door, a changed predicate, a refusal branch, a re-read of a protected row, a changed
+  cap — and **TOUCHES allows light**. The test is one question: **can the reviewer name a thing of
+  one of those kinds that did not exist before this phase?** Declare this project's list of kinds;
+  the question is the same everywhere.
+- **Where the verdict is WRITTEN, and the exact sentinel a downstream command gates on.** One fixed
+  header line in the plan, carrying the tier *and* the reading that produced it — the count, and
+  each risk call in the definition's own words rather than a paraphrase of what the work does. A
+  tier chosen in conversation and not written down is re-chosen by every reader, and a paraphrased
+  reading reads as a contradiction to the next one.
+- **The per-issue exception**, if the light tier has one. An item that TOUCHES the risk surface
+  without ADDING one does not raise the whole phase: it carries a flag and gets the full tier's
+  per-item verification alone. **Declare that the flag is set TWICE and that the second reading
+  binds** — the plan flags what it can see before the code exists, and every implementer's return
+  declares whether its own diff touched the risk surface, which mandates the verifier whatever the
+  plan said. A classification written in prose before implementation is exactly the one that misses.
+- **The audit each tier owes at merge**, which the orchestrating consumer reads. Name what the full
+  tier's audit re-runs and what the light one's runs **instead**, so a lighter merge audit is a
+  decision on the record rather than an omission.
+- **What a light-tier report must still carry, capped.** The verdicts, the PR, the gate output
+  verbatim, the findings with their dispositions, and one section for proposals, deviations and
+  **anything the run measured that contradicts or extends a rule in the adapter**. That last item is
+  not decoration: the debrief is how a run amends the law, and dropping the debrief must not drop
+  the channel.
+
+**The release run's condition is a TREE comparison, never a claim about when a run last happened.**
+Name the paths that count as code — sources, configuration, templates, assets, tests, tooling,
+translations. Compare the release commit's tree for exactly those paths against the tree of the last
+commit that had a full green run: equal → the run is skipped and the skip is stated with the command
+that proved it; different in any of them → it runs, however recently some branch was green. A
+phase's green is green for ITS branch point, and the integration branch receives merges and
+sanctioned bookkeeping afterwards. A delta confined to documents, reports and records is bookkeeping
+and triggers nothing. *(Measured: a full re-run over identical code was started at a release and
+stopped by the owner as pure waste.)*
+
+**Declare where the executor brief TEMPLATES live, one per tier.** The orchestrating consumer FILLS
+a template rather than composing a brief per launch, so their paths are a project fact it needs;
+the rule about why lives with that consumer.
+
+**Do not declare what the tiers cost as a saving you have not measured.** The reason to record cost
+at all is to falsify the prediction that motivated the tiers — so state the per-phase readings and
+what they did or did not confirm. The one on record: dropping ceremony removed the *ceremony*
+overhead and **not** the verification depth, because a phase's cost tracks its item count and the
+proof depth each item demands, and the light tier reduces neither of those and must not — they are
+what it kept on purpose. A small light phase with deep per-item proofs can cost more than a smaller
+full one, and that is the selector behaving correctly.
 
 ### `config-dirs` *(optional)*
 
