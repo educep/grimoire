@@ -119,6 +119,17 @@ and do not verify anything until I say so."* Without that sentence the agent mea
 unstaged state and reports the guard as broken; one phase paid a full round of its first issue to
 rediscover this.
 
+**And a DELETION owes a sweep of everything KEYED on what it removed — which no issue's own subset
+can see.** Removing a module, a page, a script or an asset silently invalidates the things that name
+it elsewhere: census rows that enumerate it, frozen ratchet or baseline entries that list it,
+reachability guards that assert it is reached, companion assets loaded only by it. None of those are
+among the deleting issue's files, so per-issue verification is blind to them *by construction*, and
+a review scoped to the diff sees a clean removal. A batch that deletes therefore runs the FULL
+verification set once before its PR opens, and the adapter's `verify` capability names the keyed
+artifacts this project keeps. *(Measured: one dead page's removal broke two frozen ratchet rows and
+stranded a script nothing loaded any more; the whole-suite run was the only thing that caught
+either.)*
+
 When correctness matters (money, tenancy, idempotency, anything the adapter's `constraints` flag),
 make it a pipeline: **edit → verify**, the verify stage on the judgment model
 (`model-per-role.domain-verify`), so each edit is checked the moment it lands instead of hoping

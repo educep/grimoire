@@ -199,6 +199,16 @@ measured, each cheap to check once you know its shape:
   quotation reported as fabricated was verbatim and real, just misattributed to the wrong file —
   both readings cost work, so cite the file you actually read, and when a quotation "isn't there",
   consider that it may be somewhere else before calling it invented.
+- **A document's SILENCE is not a measurement of the world.** An unticked box, a missing row, an
+  absent entry records what somebody wrote down — not what exists — and reading it as absence
+  converts a missing RECORD into a missing THING. *(Measured: a readiness audit filed "there is no
+  production administrator account" as a launch blocker, citing a plan's unticked box; the account
+  existed and two people had been signing in with it for weeks.)* A negative claim about the
+  environment needs a query, a listing or an attempt — never a file's quiet. Where the environment
+  genuinely cannot be measured from where you stand, the finding is written as *"unverified: the
+  box is unticked"* and routed to its owner as a question, never filed as a blocker. It is the
+  structural-graph rule one level up: **never evidence for a negative.** *Corollary for whoever
+  writes such a document*: tick the box when the work lands, because the next reader will trust it.
 
 **The cheap remedy is deletion, not hedging.** Measured over six passes at the same over-claim:
 every pass that *rewrote* it with a supporting clause introduced a new false clause, because a hedge
