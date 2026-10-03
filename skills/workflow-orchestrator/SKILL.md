@@ -126,7 +126,7 @@ a task that was sliced too big; the executor re-slices instead of nesting. No in
   second. Hand the entry over **explicitly labelled as a hypothesis you wrote**, and make
   correcting it a required deliverable of the phase; the corrections come back as bookkeeping and
   you land them at the cut.
-  *(Measured 2026-08-29: an orchestrator prompt passed on an entry's claim that a helper was a
+  *(Measured: an orchestrator prompt passed on an entry's claim that a helper was a
   "ready-made replacement" for a door. It was not — it drops the plan-limit gate, so believing the
   prompt would have shipped a hole in a paid plan boundary. The executor investigated instead of
   believing, and falsified it. In the same session the same orchestrator's pre-derivation did catch
@@ -159,7 +159,8 @@ a task that was sliced too big; the executor re-slices instead of nesting. No in
     `git branch --show-current` before every cut, open the PR but NEVER merge, never edit the
     shared record surfaces (report proposals instead), deferral over improvised scope** —
     an entry whose claim is falsified gets DEFERRED/FALSIFIED with the measurement, not a
-    bigger fix,
+    bigger fix, and **the comment rule with the adapter's `comment-budget` values goes into every
+    implementer and fixer prompt**,
   - the report format: per-item verdict table (SHIPPED with commit + proof / DEFERRED with
     measurement / FALSIFIED with claimed-vs-measured), PR number, files touched with line
     counts, verbatim test tails, review residuals, bookkeeping proposals, deviations,
@@ -237,7 +238,7 @@ a task that was sliced too big; the executor re-slices instead of nesting. No in
   executor's own reporting a gate on a downstream consequence. **An incentive cannot be cancelled
   by naming it** — "your filings decide whether X happens, but do not let that bias you" leaves
   the incentive in place and adds a disclaimer. The executor's context is its scope, its fences,
-  and its ceremony. Nothing else. *(Measured 2026-08-29: an owner pre-authorised the next phase
+  and its ceremony. Nothing else. *(Measured: an owner pre-authorised the next phase
   conditional on the current one filing no new work; putting that condition in the launch prompt
   handed the actor closest to the findings a reason to under-file. Caught by the owner, retracted
   mid-phase. Write each phase's prompt standalone, with no forward knowledge.)*

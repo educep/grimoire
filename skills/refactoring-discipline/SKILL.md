@@ -95,15 +95,10 @@ literal — pin the scope to something **derived at runtime** (the class list, t
 inheritance order), because the scope of a guard is itself a census and a literal goes stale
 silently, scoring green over files the scanner never opens.
 
-The size limit has a failure mode of its own worth naming: **the cap starts editing the prose
-rather than the code.** On a file at its limit, a needed comment costs a commit, so what gets cut
-is documentation — in exactly the files where writing things down catches defects. When the cap is
-doing that, the split is due now, and "stop and report" beats shaving explanation to fit. **A
-PROSE-ONLY correctness fix counts as a correctness fix**: correcting a comment, a docstring or a
-citation that currently states something false ships no executable line and is still a fix, and *"it
-is only prose"* is precisely the argument that gets it compressed away instead of made. One file at
-its cap was compressed twice to stay there, and a journaled defect's two-line record could not be
-written into it at all. At the cap, a prose correction is a split trigger like any other.
+Prose counts against the cap, so over-long comments force splits the code does not need. Hold
+source prose to the adapter's `comment-budget` before diagnosing a split. A false comment is fixed
+by deleting it or shortening it to what is true; that costs no lines and is never a split trigger.
+History belongs in commits and the record surfaces, never in a file at its cap.
 
 **Where the work's own nature is to grow files, budget the split at PLANNING time** from the
 measured headroom, rather than reacting to the limit mid-round. One round took three structural
