@@ -44,7 +44,7 @@ answer is "none":
 | `orchestration-tool` | Is there a harness tool that runs scripted multi-agent workflows, and how is it invoked? | Record `none`. Plain agent dispatch is the path — it is the default anyway, so nothing is lost but the accelerator. |
 | `verify` | …and which checks run at push/merge that a commit-time gate does not catch? | Record `none`, and say that opening a PR needs no hand-run check. |
 | `code-graph`, `docs-lookup` | Is the tool installed / reachable? | Record `none`. Consumers answer the question the expensive way and **say** they did. |
-| `comment-budget` | What are the source-comment budgets and history tokens, and does a check enforce them? | Record the defaults from the capability below and `enforced by: none`. The rule still rides every implementer prompt and every review. |
+| `comment-budget` | What are the source-comment budgets and history tokens, and does a check enforce them? | Propose the budgets below, the history tokens and pointer form this project's records use, and `enforced by: none`. The rule still rides every implementer prompt and every review. |
 
 The interview is a conversation, not a form: ask only what the repo did not already answer, and
 confirm the 🔒 fields even when a draft filled them in.
@@ -358,7 +358,8 @@ stopped by the owner as pure waste.)*
 
 **Declare where the executor brief TEMPLATES live, one per tier.** The orchestrating consumer FILLS
 a template rather than composing a brief per launch, so their paths are a project fact it needs;
-the rule about why lives with that consumer.
+the rule about why lives with that consumer. Each template carries the comment rule with the
+`comment-budget` values as a standing rule, because only placeholders are filled at launch.
 
 **Do not declare what the tiers cost as a saving you have not measured.** The reason to record cost
 at all is to falsify the prediction that motivated the tiers — so state the per-phase readings and
@@ -563,11 +564,13 @@ record surfaces, never in source. This capability holds the values; consumers ne
 - **History tokens**: the project's backlog, review, issue, phase and PR id forms, plus "used to",
   "first draft" and dated "measured on <date>".
 - **Pointer form**: the one line allowed to cite a record, e.g. `# Why: <record> <date> (<topic>).`
+  A line in this form is exempt from the history tokens.
 - **Excluded paths**: generated, vendored and migration code.
 - **Enforced by**: the command that checks the lines a commit adds, or `none`.
 
-Absent → module 3, class or function 1 + 3, comment run 3, test 1; the tokens above; no pointer;
-nothing excluded; not enforced.
+The install interview proposes module 3, class or function 1 + 3, comment run 3, test 1.
+Absent → consumers still pass the rule and flag history and restating comments, measure no
+budget, and say so.
 
 ### `secrets`
 

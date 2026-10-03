@@ -165,10 +165,10 @@ the code rather than the framework:
 - **Claim truth**: a comment, docstring, disposition or count that asserts something the code does
   not do, or a citation that does not resolve. No gate catches this class. The fix for a false
   comment is to delete it or shorten it to what is true — never to add a sentence.
-- **Source prose over the adapter's `comment-budget`, or history in source** (backlog or review
-  ids, issue, phase or PR numbers, "used to") → EYESORE. A comment that restates the code →
-  NITPICK. A missing comment is a finding only when a non-obvious WHY is missing; a missing
-  docstring is not.
+- **Source prose over the adapter's `comment-budget`, or history in source** (that capability's
+  history tokens; when it is absent, backlog, review, issue, phase or PR ids) → EYESORE. A comment
+  that restates the code → NITPICK. A missing comment is a finding only when a non-obvious WHY is
+  missing; a missing docstring is not.
 
 ______________________________________________________________________
 

@@ -487,8 +487,8 @@ inlined literally, with the library names relevant to THIS issue}. If the route 
 say so in notes — do NOT silently fall back to training data.
 
 Comments say WHY, only when the code cannot; no history in source. Budgets and history tokens:
-{the adapter's `comment-budget`, inlined literally}. A comment your change makes false is deleted
-or shortened, never extended.
+{the adapter's `comment-budget`, inlined literally; if absent, "none declared"}. A comment your
+change makes false is deleted or shortened, never extended.
 
 Steps:
 1. {concrete step, exact file path and symbol}
@@ -646,9 +646,10 @@ the worst defects are born.
 The fix prompt is `/fix-review`'s agent prompt: the finding verbatim, the files it may touch, the
 constraints, the comment rule with its `comment-budget` values, "reproduce it if a test can
 express it, fix it, add a regression test that FAILS without your change", verify your subset
-only, no git, no shared-record writes, and the return schema. **A fix sweeps the CLASS, not the pointed instance** — and the class sweep is only as wide
-as its vocabulary: for claims in prose (comments, docstrings, citations) the sweep is READING the
-neighbours, because a false comment need contain none of your grep terms.
+only, no git, no shared-record writes, and the return schema. **A fix sweeps the CLASS, not the
+pointed instance** — and the class sweep is only as wide as its vocabulary: for claims in prose
+(comments, docstrings, citations) the sweep is READING the neighbours, because a false comment need
+contain none of your grep terms.
 
 ### C) The orchestration guide — `WORKFLOW_PLAN.md`
 

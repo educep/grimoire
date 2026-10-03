@@ -325,11 +325,11 @@ question the expensive way, and say that you did.
 
    1. **When a claim is over-stated, DELETE the over-claim** — in a plan, a report or source (a
       comment is a claim too). Do not rewrite it with a qualifier and do not add evidence to
-      support it. A deleted clause cannot be false; a hedged one is a new
-      claim carrying the same burden. Over six passes at one over-claim, every pass that *rewrote*
-      it introduced a new false clause, because a hedge attaches fresh evidence and each attachment
-      is a new claim; the single pass that produced zero false claims deleted it, cited nothing, and
-      ran net-negative on lines.
+      support it. A deleted clause cannot be false; a hedged one is a new claim carrying the same
+      burden. Over six passes at one over-claim, every pass that *rewrote* it introduced a new
+      false clause, because a hedge attaches fresh evidence and each attachment is a new claim;
+      the single pass that produced zero false claims deleted it, cited nothing, and ran
+      net-negative on lines.
    2. **The documentation test is SOLE RECORD versus RESTATEMENT** — never artifact-count-per-diff-size.
       For each document a plan would mandate, ask: *is this the only home of this content, or a
       second copy of something already recorded?* Sole home → it ships regardless of diff size (a
