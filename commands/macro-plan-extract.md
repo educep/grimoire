@@ -13,7 +13,7 @@ execution plan.
 > *Reads the adapter capabilities:* `overview`, `artifact-paths` (where the issue list is written),
 > `backlog` (what a deferred or falsified item becomes), `constraints`, `reviewer` (the gate the
 > investigation route's small fix still runs), `integration-branch` and `git-conventions` (the
-> tail), `code-graph` *(optional)*, `docs-lookup` *(optional)*.
+> tail), `code-graph` *(optional)*, `docs-lookup` *(optional)*, `comment-budget` *(optional)*.
 
 ## Input
 
@@ -321,10 +321,11 @@ question the expensive way, and say that you did.
 6. **Number issues sequentially** and keep related sub-tasks inside one issue.
 
 7. **Prose discipline — the plan's own writing is unverified code.** Everything in a plan that is
-   not a command is a claim, and agents execute claims as specifications. Four rules, each measured:
+   not a command is a claim, and agents execute claims as specifications. Five rules, each measured:
 
-   1. **When a claim is over-stated, DELETE the over-claim.** Do not rewrite it with a qualifier and
-      do not add evidence to support it. A deleted clause cannot be false; a hedged one is a new
+   1. **When a claim is over-stated, DELETE the over-claim** — in a plan, a report or source (a
+      comment is a claim too). Do not rewrite it with a qualifier and do not add evidence to
+      support it. A deleted clause cannot be false; a hedged one is a new
       claim carrying the same burden. Over six passes at one over-claim, every pass that *rewrote*
       it introduced a new false clause, because a hedge attaches fresh evidence and each attachment
       is a new claim; the single pass that produced zero false claims deleted it, cited nothing, and
@@ -341,9 +342,12 @@ question the expensive way, and say that you did.
       **property** — "over the soft threshold", "the actionable set emptied" — never the
       measurement. A copied number is a claim that decays on the next commit with no reader who
       would notice.
-   4. **A fix that invalidates a comment updates it in the same edit.** No gate catches this class —
-      not lint, not types, not tests; only a reader. When a change alters a mechanism, grep the
-      neighbourhood for prose that describes it **before** committing.
+   4. **A fix that invalidates a comment deletes or shortens it in the same edit** — never extends
+      it. No gate catches this class — not lint, not types, not tests; only a reader. When a change
+      alters a mechanism, grep the neighbourhood for prose that describes it **before** committing.
+   5. **Source prose has budgets and no history.** A comment says WHY, only when the code cannot;
+      the budgets, history tokens and pointer form are the adapter's `comment-budget`. An issue
+      that mandates a comment or docstring states it within those budgets.
 
 ______________________________________________________________________
 

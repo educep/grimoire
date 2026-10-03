@@ -235,6 +235,10 @@ comment need contain none of your grep terms. This matters doubly where agents a
 false comment does not merely mislead, it steers every reader that opens the file, with the full
 authority of the codebase.
 
+A false comment is fixed by deleting it or shortening it to what is true, never by adding a
+sentence — fix rounds are where comments grow. Every fixer's prompt carries the comment rule with
+the adapter's `comment-budget` values inlined; the review flags fix-diff prose over those budgets.
+
 Claims are settled by execution **regardless of rank**: a verifier may refute the reviewer by
 mutation, a fix agent may overrule the orchestrator's "I verified this", and an executor may
 retract an instruction of the plan itself by derivation — each has happened, correctly. This is the

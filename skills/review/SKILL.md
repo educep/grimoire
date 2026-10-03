@@ -7,12 +7,14 @@ description: The review method — how to scope a review, how to rate what you f
 
 > **Adapter first.** Read the adapter's `reviewer` capability before acting. It supplies the
 > **project's checklist** (what to hunt for in *this* stack), the severity scale if the project
-> overrides the default, the triage dispositions, and the fix-round cap. This skill supplies the
-> method around that checklist. Defaults are given inline where the capability is silent.
+> overrides the default, the triage dispositions, and the fix-round cap; `comment-budget`
+> *(optional)* supplies the source-prose budgets. This skill supplies the method around that
+> checklist. Defaults are given inline where the capability is silent.
 
 This skill owns **how to review**. It deliberately owns neither of the two things that vary:
 
-- **What to hunt for** is the adapter's, because a Django checklist is worthless in a Rust project.
+- **What to hunt for** is the adapter's, because a web-framework checklist is worthless in a Rust
+  project.
 - **Where the report goes** is the *caller's* — see below, which is the most important section here.
 
 ______________________________________________________________________
@@ -30,7 +32,7 @@ A review has three legitimate homes and they are not interchangeable:
 **A caller that says nothing about persistence is a defect in that caller**, not a question to
 resolve at runtime.
 
-*Measured in the host project, 2026-08-29. The agent definition said nothing about files while the
+*Measured in the host project. The agent definition said nothing about files while the
 workflow command told the orchestrator to save what the agent returned — and a note in the agent
 claimed the two were "kept in sync". An executor dispatched the agent and then polled the reviews
 directory **191 times** for a file it was itself responsible for writing. Each poll re-read the whole
@@ -128,7 +130,7 @@ ______________________________________________________________________
 | **CATASTROPHE** | Data loss, security breach, crashes in production |
 | **DISGRACE** | Wrong behaviour, missing authorization, pathological queries |
 | **EYESORE** | Code smell, missing types, style violation |
-| **NITPICK** | Minor naming, missing docstring, dead code |
+| **NITPICK** | Minor naming, dead code, a comment restating the code |
 
 Projects commonly rename or decorate these; take the names from the adapter when it declares them.
 
@@ -161,7 +163,12 @@ the code rather than the framework:
   crosses a boundary is a machine-readable signal; the sentence is written on the side that knows
   the user, and branching on copy breaks the day the copy is translated or reworded.
 - **Claim truth**: a comment, docstring, disposition or count that asserts something the code does
-  not do, or a citation that does not resolve. No gate catches this class.
+  not do, or a citation that does not resolve. No gate catches this class. The fix for a false
+  comment is to delete it or shorten it to what is true — never to add a sentence.
+- **Source prose over the adapter's `comment-budget`, or history in source** (backlog or review
+  ids, issue, phase or PR numbers, "used to") → EYESORE. A comment that restates the code →
+  NITPICK. A missing comment is a finding only when a non-obvious WHY is missing; a missing
+  docstring is not.
 
 ______________________________________________________________________
 

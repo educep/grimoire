@@ -44,6 +44,7 @@ answer is "none":
 | `orchestration-tool` | Is there a harness tool that runs scripted multi-agent workflows, and how is it invoked? | Record `none`. Plain agent dispatch is the path — it is the default anyway, so nothing is lost but the accelerator. |
 | `verify` | …and which checks run at push/merge that a commit-time gate does not catch? | Record `none`, and say that opening a PR needs no hand-run check. |
 | `code-graph`, `docs-lookup` | Is the tool installed / reachable? | Record `none`. Consumers answer the question the expensive way and **say** they did. |
+| `comment-budget` | What are the source-comment budgets and history tokens, and does a check enforce them? | Record the defaults from the capability below and `enforced by: none`. The rule still rides every implementer prompt and every review. |
 
 The interview is a conversation, not a form: ask only what the repo did not already answer, and
 confirm the 🔒 fields even when a draft filled them in.
@@ -54,10 +55,10 @@ confirm the 🔒 fields even when a draft filled them in.
 
 Each heading is a capability a skill or command may reference. `verify`, `apply`, `docs-lookup`,
 `constraints`, `refactoring`, `release-branch`, `ceremony-tiers`, `orchestration-tool`,
-`code-graph`, `config-dirs` and `shell-conventions` may be **absent** — a consumer that needs an
-absent capability degrades gracefully (e.g. no `verify` → review-only) and **states what it
-skipped**. Everything else is required, and a consumer that finds it missing stops and asks rather
-than guessing.
+`code-graph`, `config-dirs`, `comment-budget` and `shell-conventions` may be **absent** — a
+consumer that needs an absent capability degrades gracefully (e.g. no `verify` → review-only) and
+**states what it skipped**. Everything else is required, and a consumer that finds it missing stops
+and asks rather than guessing.
 
 ### `overview`
 
@@ -236,8 +237,8 @@ before dispatch*, not discovered at launch (see `execute`'s preconditions).
 
 **Declare the project's CHECKLIST here.** The `review` skill owns the review *method* — scoping,
 reachability rating, plant-over-inspection, output shape, triage — and deliberately does **not** own
-what to hunt for, because a checklist is stack-specific and a Django one is worthless in a Rust
-project. List the categories a reviewer must apply and the severity each defect class earns.
+what to hunt for, because a checklist is stack-specific and a web-framework one is worthless in a
+Rust project. List the categories a reviewer must apply and the severity each defect class earns.
 
 **Every caller of the reviewer must declare WHERE ITS REPORT GOES — even when the answer is
 "nowhere".** There are normally three, and they differ:
@@ -248,7 +249,7 @@ project. List the categories a reviewer must apply and the severity each defect 
 | an in-session **slash command** | yes, if given a path; otherwise prints |
 | an **orchestrated review stage** | the **orchestrator** writes it, from the returned findings |
 
-*Measured in the host project 2026-08-29: the agent definition said nothing about files while the
+*Measured in the host project: the agent definition said nothing about files while the
 workflow command told the orchestrator to save what the agent returned — under a note claiming the
 two were "kept in sync". An executor dispatched the agent and then polled the reviews directory
 **191 times** for a file it was itself responsible for writing, with no terminating condition.*
@@ -551,6 +552,22 @@ Read by the `refactoring-discipline` skill. Declares:
 
 Absent → the skill uses its generic defaults and treats every cross-module reference as
 interface until proven otherwise.
+
+### `comment-budget` *(optional)*
+
+The rule is fixed: a comment says WHY, only when the code cannot; history lives in commits and the
+record surfaces, never in source. This capability holds the values; consumers never hard-code them.
+
+- **Budgets**, in non-blank lines: module docstring; class or function docstring (summary + why);
+  a run of full-line comments; test docstring. A longer explanation goes in a doc, linked by one line.
+- **History tokens**: the project's backlog, review, issue, phase and PR id forms, plus "used to",
+  "first draft" and dated "measured on <date>".
+- **Pointer form**: the one line allowed to cite a record, e.g. `# Why: <record> <date> (<topic>).`
+- **Excluded paths**: generated, vendored and migration code.
+- **Enforced by**: the command that checks the lines a commit adds, or `none`.
+
+Absent → module 3, class or function 1 + 3, comment run 3, test 1; the tokens above; no pointer;
+nothing excluded; not enforced.
 
 ### `secrets`
 

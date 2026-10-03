@@ -17,7 +17,7 @@ per batch, plus a thin orchestration guide (`WORKFLOW_PLAN.md`) that a cold sess
 > `apply`/`deploy`, `git-conventions`, `integration-branch`, `release-branch` *(optional)*,
 > `model-per-role`, `reviewer`, `shared-files`, `backlog`, `records`, `artifact-paths`,
 > `constraints`, `refactoring`, `orchestration-tool` *(optional)*, `code-graph` *(optional)*,
-> `docs-lookup` *(optional)*, `shell-conventions` *(optional)*.
+> `docs-lookup` *(optional)*, `shell-conventions` *(optional)*, `comment-budget` *(optional)*.
 
 > **FIRST ACTION, before reading anything else here: check whether the adapter's
 > `orchestration-tool` is actually in YOUR tool list.** If it is not — the normal case for a
@@ -486,6 +486,10 @@ Docs lookup — before using any API you are not certain of: {the adapter's docs
 inlined literally, with the library names relevant to THIS issue}. If the route is unreachable,
 say so in notes — do NOT silently fall back to training data.
 
+Comments say WHY, only when the code cannot; no history in source. Budgets and history tokens:
+{the adapter's `comment-budget`, inlined literally}. A comment your change makes false is deleted
+or shortened, never extended.
+
 Steps:
 1. {concrete step, exact file path and symbol}
 2. …
@@ -640,9 +644,9 @@ the worst defects are born.
 ```
 
 The fix prompt is `/fix-review`'s agent prompt: the finding verbatim, the files it may touch, the
-constraints, "reproduce it if a test can express it, fix it, add a regression test that FAILS
-without your change", verify your subset only, no git, no shared-record writes, and the return
-schema. **A fix sweeps the CLASS, not the pointed instance** — and the class sweep is only as wide
+constraints, the comment rule with its `comment-budget` values, "reproduce it if a test can
+express it, fix it, add a regression test that FAILS without your change", verify your subset
+only, no git, no shared-record writes, and the return schema. **A fix sweeps the CLASS, not the pointed instance** — and the class sweep is only as wide
 as its vocabulary: for claims in prose (comments, docstrings, citations) the sweep is READING the
 neighbours, because a false comment need contain none of your grep terms.
 
@@ -938,6 +942,10 @@ ______________________________________________________________________
 16. **Announcing is not doing.** A main-loop turn never ends on "starting X now" — that is a stall,
     not a stop. End a turn only on completed work or a genuine stop predicate. Self-stall is an
     autonomy failure of the same rank as asking a derivable question.
+
+17. **Every implementer and fixer prompt carries the comment rule**, with the adapter's
+    `comment-budget` values inlined literally. A rule that lives only in the adapter never reaches
+    an agent that does not read it.
 
 ______________________________________________________________________
 
