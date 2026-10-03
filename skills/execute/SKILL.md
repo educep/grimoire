@@ -70,6 +70,9 @@ else. Each implementer:
 
 - edits only its assigned, disjoint files; consults `docs-lookup` before non-trivial API use;
 - **runs no git, and never writes a `shared-files` entry** — it surfaces that content in its return;
+- gets the comment rule in its prompt, with the adapter's `comment-budget` values inlined: comments
+  say WHY, only when the code cannot; no history in source; a comment its change makes false is
+  deleted or shortened, never extended;
 - ends in a `format`-clean state with `verify` passing on its slice — **but if `verify` runs against
   shared infrastructure (one test database, one service), parallel agents must not each run it: two
   concurrent full suites will wreck the shared state. Agents verify their subset at most; the main
@@ -395,11 +398,10 @@ habit; so is archiving what got fixed.
 Agents act on prose they cannot cross-examine, so the record's mechanics are correctness inputs:
 
 - **A comment that makes a checkable claim carries the evidence burden of the test it replaces.**
-  "No path does X" is a census; "unreachable" is a measurement. Prefer the hedged form —
-  "measured: …", "as of <ref>, the only writer is …" — over bare absolutes, and shrinking an
-  absolute does not help; the only stable form names what is known today and disclaims
-  completeness. **An agent that relies on a comment to justify NOT doing something verifies that
-  comment first** — it is being used as evidence.
+  "No path does X" is a census; "unreachable" is a measurement. Delete an unproved absolute rather
+  than hedge it: a hedge is a new claim, and a dated "measured: …" is history in source. **An agent
+  that relies on a comment to justify NOT doing something verifies that comment first** — it is
+  being used as evidence.
 - **Attribution is a claim**: verify introduced-here vs. pre-existing against the base branch
   before journaling it; mis-attribution sends the fix to the wrong owner and the lesson to the
   wrong ledger.

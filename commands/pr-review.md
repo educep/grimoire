@@ -7,7 +7,7 @@ Review the **whole open PR** — every commit on this branch against the integra
 > *Reads the adapter capabilities:* `reviewer` (persona, checklist, severity scale, triage),
 > `integration-branch` (the baseline), `artifact-paths` (where the report file goes),
 > `constraints` (the project invariants a diff can violate), `backlog` (where a deferred finding
-> lands).
+> lands), `comment-budget` *(optional)*.
 
 > **Load the SKILL, not the reviewer AGENT file.** That file is the *dispatchable* form of the same
 > reviewer and its persistence contract is the opposite of this one's: it returns the report and

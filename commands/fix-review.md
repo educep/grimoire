@@ -9,7 +9,8 @@ agent per independent group — without excuses and without silently dropping an
 > *Reads the adapter capabilities:* `reviewer` (severity scale, dispositions, fix-round cap),
 > `model-per-role` (fixers are judgment-tier), `format`, `verify`, `constraints`, `refactoring`
 > (the file-length cap a fix must not breach), `docs-lookup` *(optional)*, `git-conventions`,
-> `shared-files`, `artifact-paths`, `backlog`, `shell-conventions` *(optional)*.
+> `shared-files`, `artifact-paths`, `backlog`, `shell-conventions` *(optional)*,
+> `comment-budget` *(optional)*.
 
 ## Input
 
@@ -90,8 +91,8 @@ for a third try. A dispatch silent long after launch is dead: redispatch, or do 
 1. **The findings in this group**, verbatim: severity, `file:line`, the problem, the suggested fix.
 2. **The project's hard constraints**, inlined from the adapter's `constraints` — including the
    file-length cap from `refactoring`. *A fix that would breach the cap does not get compressed to
-   fit:* a correctness fix that needs lines in a file already at the cap is a split trigger, and a
-   prose-only correctness fix (a comment or citation that currently states something false) counts.
+   fit:* a correctness fix that needs lines in a file already at the cap is a split trigger. A false
+   comment needs no lines: it is deleted or shortened (item 8).
 3. **The verification the fix owes**: reproduce the defect first, fix it, and add a regression test
    that **fails without the change** — checked, not assumed. A mandated test that cannot go red for
    the behaviour it names pins nothing, and the agent must say so if it finds that to be the case.
@@ -107,7 +108,10 @@ for a third try. A dispatch silent long after launch is dead: redispatch, or do 
    plan's own acceptance boxes. Content for those files goes in the return.
 7. **End in a `format`-clean state**, and the project's shell conventions if the adapter declares
    any.
-8. **The return schema**, enumerated: finding id, files touched (new ones marked), the proposed
+8. **The comment rule**, with the adapter's `comment-budget` values inlined: comments say WHY,
+   only when the code cannot; no history in source. A false comment is deleted or shortened to what
+   is true — never fixed by adding a sentence.
+9. **The return schema**, enumerated: finding id, files touched (new ones marked), the proposed
    commit message, resolved yes/no, and notes — reproduction result, decisions taken, lookup
    failures, anything the human must see. Anything the caller must not get wrong lives in the schema
    or a numbered step, never in surrounding prose.
